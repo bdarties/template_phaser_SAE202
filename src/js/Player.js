@@ -14,6 +14,8 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         this.setCollideWorldBounds(true);
         this.setDepth(50);
         this.body.setMaxVelocityY(400);
+        this.displayWidth = 48;
+        this.displayHeight = 64;
 
         if (typeof (this.scene.game.config.player_gravity) != 'undefined') {
             this.gravity = this.scene.game.config.player_gravity - this.scene.physics.world.gravity.y;

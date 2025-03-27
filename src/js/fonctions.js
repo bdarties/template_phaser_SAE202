@@ -223,7 +223,7 @@ export function printMsg(player, zone) {
 export function backgroundCreation(background_image_key, parallax_background_image_key) {
     if (this.textures.exists(background_image_key)) {
         this.background_image = this.add.image(this.game.config.width / 2, this.game.config.height / 2, background_image_key);
-        this.background_image.setScrollFactor(0);
+      //  this.background_image.setScrollFactor(0);
     }
     if (this.textures.exists(parallax_background_image_key)) {
         this.fond = this.add.tileSprite(0, 0, this.game.config.width, this.game.config.height, parallax_background_image_key).setOrigin(0, 0);

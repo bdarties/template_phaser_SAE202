@@ -38,12 +38,19 @@ export default class loading extends Phaser.Scene {
                     var filePath = node.getAttribute("href");
                     var fileName = filePath.substring(filePath.lastIndexOf("/") + 1);
                     // Si le fichier commence par "portal" et se termine par ".png"
-                    if (fileName.startsWith("portal") && fileName.endsWith(".png")) {
-                        // Charger l'image
+                    if ((fileName.startsWith("portal") || fileName.startsWith("item_to_collect_")) && fileName.endsWith(".png")) {
                         var fileNameWithoutExtension = fileName.split(".")[0];
-                        self.load.image(fileNameWithoutExtension, directory + fileName);
+                        // Vérification de l'existence du fichier avant de le charger
+                        fetch(directory + fileName, { method: 'HEAD' })
+                            .then(response => {
+                                if (response.ok) {
+                                    self.load.image(fileNameWithoutExtension, directory + fileName);
+                                } else {
+                                    console.warn(`Fichier introuvable : ${directory + fileName}`);
+                                }
+                            })
+                            .catch(error => console.error(`Erreur lors de la vérification du fichier : ${directory + fileName}`, error));
                     }
-                    
                 });
             })
             .catch(error => console.error('Erreur lors de la récupération des fichiers du répertoire :', error));
@@ -87,6 +94,17 @@ export default class loading extends Phaser.Scene {
         this.load.image("bullet", "src/assets/images/bullet.png");
         this.load.image("item_to_collect", "src/assets/images/item_to_collect.png");
         this.load.image("item_jump", "src/assets/images/item_jump.png");
+        
+        this.load.image("item_doubleJump", "src/assets/images/item_doubleJump.png");
+        this.load.image("item_tripleJump", "src/assets/images/item_tripleJump.png");
+
+        // Écouter l'événement d'erreur de chargement
+        this.load.on('loaderror', (file) => {
+            if (file.key === "item_doubleJump") {
+                console.warn("Fichier introuvable ou erreur de chargement : src/assets/images/item_doubleJump.png");
+            }
+        });
+
         this.load.image("item_hearth", "src/assets/images/item_hearth.png");
         
         this.load.image("coeur", "src/assets/images/coeur.png");
@@ -171,6 +189,10 @@ export default class loading extends Phaser.Scene {
             }
         }, this);
 
+       // Test pour afficher les noms des fichiers item_to_collect_*** chargés
+        const loadedItemToCollectFiles = Object.keys(this.textures.list).filter(textureName => textureName.startsWith("item_to_collect_"));
+        console.log("Fichiers item_to_collect_*** chargés :", loadedItemToCollectFiles);
+
         this.game.config.default_gravity = this.physics.world.gravity.y;
 
         // chargement des scenes
@@ -217,6 +239,7 @@ export default class loading extends Phaser.Scene {
         // chargement de l'interface de jeu avec les parametres de victoire
         this.scene.add('interfaceJeu', interfaceJeu, false, { remainingMonsters: remainingMonsters, remainingItems: remainingItems });
         
+ 
         // lancement du jeu
         this.scene.start("accueil");
 
