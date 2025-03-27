@@ -43,7 +43,12 @@ export default class loading extends Phaser.Scene {
                         var fileNameWithoutExtension = fileName.split(".")[0];
                         self.load.image(fileNameWithoutExtension, directory + fileName);
                     }
-                    
+                    // Si le fichier commence par "item_to_collect_" et se termine par ".png"
+                    if (fileName.startsWith("item_to_collect_") && fileName.endsWith(".png")) {
+                        // Charger l'image
+                        var fileNameWithoutExtension = fileName.split(".")[0];
+                        self.load.image(fileNameWithoutExtension, directory + fileName);
+                    }
                 });
             })
             .catch(error => console.error('Erreur lors de la récupération des fichiers du répertoire :', error));
@@ -171,6 +176,10 @@ export default class loading extends Phaser.Scene {
             }
         }, this);
 
+       // Test pour afficher les noms des fichiers item_to_collect_*** chargés
+        const loadedItemToCollectFiles = Object.keys(this.textures.list).filter(textureName => textureName.startsWith("item_to_collect_"));
+        console.log("Fichiers item_to_collect_*** chargés :", loadedItemToCollectFiles);
+
         this.game.config.default_gravity = this.physics.world.gravity.y;
 
         // chargement des scenes
@@ -217,6 +226,7 @@ export default class loading extends Phaser.Scene {
         // chargement de l'interface de jeu avec les parametres de victoire
         this.scene.add('interfaceJeu', interfaceJeu, false, { remainingMonsters: remainingMonsters, remainingItems: remainingItems });
         
+ 
         // lancement du jeu
         this.scene.start("accueil");
 
