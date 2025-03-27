@@ -1,5 +1,6 @@
 export default class Player extends Phaser.Physics.Arcade.Sprite {
     constructor(scene, x, y, textureKey) {
+        // Initialisation du joueur et de ses propriétés
         super(scene, x, y, textureKey);
         this.interface = this.scene.scene.get('interfaceJeu');
         // la plupart des proprietes sont dans l'objet playerProperties
@@ -27,6 +28,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         this.onLadder = false;
         this.justCrossingPortal = false;
         this.invincible = false;
+         this.hasDoubleJumped = false; 
 
         // gestion de l'arme
         this.closeCombat = this.scene.game.config.player_closeCombat;
@@ -66,40 +68,71 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 
     }
 
-    // Gestion des attributs liés au mouvement
+    // === Gestion des attributs liés au mouvement ===
+
+    /**
+     * Retourne la vitesse actuelle du joueur.
+     */
     getSpeed() {
         return this.playerProperties.speed;
     }
 
+    /**
+     * Retourne l'accélération actuelle du joueur.
+     */
     getAcceleration() {
         return this.playerProperties.acceleration;
     }
 
+    /**
+     * Retourne la hauteur de saut actuelle du joueur.
+     */
     getJumpHeight() {
         return this.playerProperties.jumpHeight;
     }
 
+    /**
+     * Augmente la hauteur de saut du joueur.
+     * @param {number} increaseHeightValue - Valeur d'augmentation.
+     */
     increaseJumpHeight(increaseHeightValue) {
         this.playerProperties.jumpHeight += increaseHeightValue;
     }
 
+    /**
+     * Augmente la vitesse du joueur.
+     * @param {number} increaseSpeedValue - Valeur d'augmentation.
+     */
     increaseSpeed(increaseSpeedValue) {
         this.playerProperties.speed += increaseSpeedValue;
     }
 
-    // Gestion des attributs liés au combat
+    // === Gestion des attributs liés au combat ===
+
+    /**
+     * Retourne la durée de vie des projectiles.
+     */
     getProjectileDuration() {
         return this.playerProperties.projectileDuration;
     }
 
+    /**
+     * Retourne la vitesse des projectiles.
+     */
     getProjectileSpeed() {
         return this.playerProperties.projectileSpeed;
     }
 
+    /**
+     * Retourne la durée de rechargement entre deux tirs.
+     */
     getCoolDownDuration() {
         return this.playerProperties.coolDownDuration;
     }
 
+    /**
+     * Gère l'action de tir (corps à corps ou à distance).
+     */
     fire() {
         // attaque au corps à corps
         if (this.closeCombat == true) {
@@ -143,33 +176,55 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         }
     }
 
-    // Gestion de la santé
+    // === Gestion de la santé ===
+
+    /**
+     * Retourne les points de vie actuels du joueur.
+     */
     getHealth() {
         return this.playerProperties.health;
     }
 
+    /**
+     * Diminue les points de vie du joueur.
+     */
     decreaseHealthPoints() {
         this.playerProperties.health--;
     }
 
+    /**
+     * Augmente les points de vie du joueur si ce n'est pas au maximum.
+     */
     increaseHealthPoints() {
         if (this.getHealth() < this.getMaxHealth()) {
             this.playerProperties.health++;
         }
     }
 
+    /**
+     * Réinitialise les points de vie du joueur à leur maximum.
+     */
     resetHealthPoints() {
         this.playerProperties.health = this.playerProperties.maxHealth;
     }
 
+    /**
+     * Retourne le maximum de points de vie du joueur.
+     */
     getMaxHealth() {
         return this.playerProperties.maxHealth;
     }
 
+    /**
+     * Augmente le maximum de points de vie du joueur.
+     */
     increaseMaxHealthPoints() {
         this.playerProperties.maxHealth++;
     }
 
+    /**
+     * Rend le joueur invincible temporairement.
+     */
     setInvincible() {
         this.invincible = true;
         this.setTint("0xFF0000")
@@ -191,24 +246,42 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         }, [], this);
     }
 
+    /**
+     * Vérifie si le joueur est invincible.
+     */
     isInvincible() {
         return this.invincible;
     }
 
+    /**
+     * Vérifie si le joueur est mort.
+     */
     isDead() {
         return (this.getHealth() == 0);
     }
 
-    // Gestion des vies
+    // === Gestion des vies ===
+
+    /**
+     * Retourne le nombre de vies restantes du joueur.
+     */
     getLifes() {
         return this.playerProperties.lifes;
     }
 
+    /**
+     * Diminue le nombre de vies du joueur.
+     */
     decreaseLife() {
         this.playerProperties.lifes--;
     }
 
-    // Gestion des objets collectés
+    // === Gestion des objets collectés ===
+
+    /**
+     * Gère la collecte d'un objet par le joueur.
+     * @param {Object} item - Objet collecté.
+     */
     collectItem(item) {
         if (item.getType() == "collect") {
             this.playerProperties.itemsCollected++;
@@ -218,7 +291,12 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         }
     }
 
-    // Gestion de l'apparence
+    // === Gestion de l'apparence ===
+
+    /**
+     * Met à jour l'apparence du joueur en fonction des propriétés fournies.
+     * @param {Object} proprietes - Propriétés d'apparence.
+     */
     setNewLook(proprietes) {
         // apparence dynamique :
 
@@ -228,16 +306,27 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         if (typeof (proprietes.stand) != 'undefined') this.playerProperties.animStandtName = proprietes.stand;
     }
 
-    // Gestion des kills
+    // === Gestion des kills ===
+
+    /**
+     * Retourne le nombre d'ennemis tués par le joueur.
+     */
     getKills() {
         return this.playerProperties.kills;
     }
 
+    /**
+     * Ajoute un kill au compteur du joueur.
+     */
     addOneKill() {
         this.playerProperties.kills++;
     }
 
-    // Gestion des états et du statut
+    // === Gestion des états et du statut ===
+
+    /**
+     * Réinitialise le statut du joueur.
+     */
     resetStatut() {
         this.direction = "right";
         this.isShooting = false;
@@ -252,11 +341,20 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         this.body.setAccelerationX(0);
     }
 
+    /**
+     * Définit si la destination a été atteinte.
+     * @param {boolean} valueToAffect - Valeur à affecter.
+     */
     setDestinationReached(valueToAffect) {
         this.playerProperties.destinationReached = valueToAffect;
     }
 
-    // Méthodes liées au mouvement et à l'update
+    // === Méthodes liées au mouvement et à l'update ===
+
+    /**
+     * Met à jour l'état du joueur (mouvement, tir, animations, etc.).
+     * @param {Object} ladder_layer - Couche d'échelle pour la gestion des escaliers.
+     */
     update(ladder_layer) {
         // escalade sur une echelle
         if (ladder_layer != null) {
@@ -333,11 +431,13 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
             this.isJumping = false;
             this.setVelocityY(0);
         }
+        
         // Saut
-        // saut controllé
+        // saut contrôlé
         if (this.prepareToJump == true && Phaser.Input.Keyboard.JustUp(this.jumpKey)) {
             this.body.setVelocityY(-1 * this.getJumpHeight() * ((50 + this.jumpKey.duration) / 180));
             this.prepareToJump = false;
+            this.hasDoubleJumped = false; // Réinitialise l'état du double saut
         }
         if (this.jumpKey.isDown && this.body.onFloor()) {
             this.prepareToJump = true;
@@ -345,9 +445,23 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
                 this.isJumping = true;
                 this.body.setVelocityY(-1 * this.getJumpHeight());
                 this.prepareToJump = false;
+                this.hasDoubleJumped = false; // Réinitialise l'état du double saut
             }
         }
 
+        // Gestion du double saut
+        if (Phaser.Input.Keyboard.JustDown(this.jumpKey)) {
+            console.log("double saut detecté");
+            console.log("canDoubleJump:", this.canDoubleJump());
+            console.log("isJumping:", this.isJumping);
+            console.log("onFloor:", this.body.onFloor());
+            console.log("hasDoubleJumped:", this.hasDoubleJumped);
+            console.log("résultat du test : ", this.canDoubleJump() && this.isJumping && !this.body.onFloor() && !this.hasDoubleJumped);
+            if (this.canDoubleJump() && this.isJumping && !this.body.onFloor() && !this.hasDoubleJumped) {
+                this.body.setVelocityY(-1 * this.getJumpHeight());
+                this.hasDoubleJumped = true; // Marque le double saut comme utilisé
+            }
+        }
 
         if (this.coefDirection == -1) {
             this.flipX = !this.flipX;
@@ -393,6 +507,97 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         }
     }
 
-    // Autres méthodes
+    // === Gestion des capacités spéciales ===
+
+    /**
+     * Vérifie si le joueur peut effectuer un double saut.
+     */
+    canDoubleJump() {
+        return this.playerProperties.canDoubleJump;
+    }
+
+    /**
+     * Définit si le joueur peut effectuer un double saut.
+     * @param {boolean} value - Valeur à affecter.
+     */
+    setDoubleJump(value) {
+        this.playerProperties.canDoubleJump = value;
+    }
+
+    /**
+     * Active la capacité de double saut pour le joueur.
+     */
+    enableDoubleJump() {
+        this.setDoubleJump(true);
+        console.log("double jump activé");
+    }
+
+    /**
+     * Vérifie si le joueur peut effectuer un triple saut.
+     */
+    canTripleJump() {
+        return this.playerProperties.canTripleJump;
+    }
+
+    /**
+     * Définit si le joueur peut effectuer un triple saut.
+     * @param {boolean} value - Valeur à affecter.
+     */
+    setTripleJump(value) {
+        this.playerProperties.canTripleJump = value;
+    }
+
+    /**
+     * Active la capacité de triple saut pour le joueur.
+     */
+    enableTripleJump() {
+        this.setTripleJump(true);
+    }
+
+    /**
+     * Vérifie si le joueur peut voler.
+     */
+    canFly() {
+        return this.playerProperties.canFly;
+    }
+
+    /**
+     * Définit si le joueur peut voler.
+     * @param {boolean} value - Valeur à affecter.
+     */
+    setFly(value) {
+        this.playerProperties.canFly = value;
+    }
+
+    /**
+     * Active la capacité de voler pour le joueur.
+     */
+    enableFlying() {
+        this.setFly(true);
+    }
+
+    /**
+     * Vérifie si le joueur peut effectuer un saut sur les murs.
+     */
+    canWallJump() {
+        return this.playerProperties.canWallJump;
+    }
+
+    /**
+     * Définit si le joueur peut effectuer un saut sur les murs.
+     * @param {boolean} value - Valeur à affecter.
+     */
+    setWallJump(value) {
+        this.playerProperties.canWallJump = value;
+    }
+
+    /**
+     * Active la capacité de saut sur les murs pour le joueur.
+     */
+    enableWallJump() {
+        this.setWallJump(true);
+    }
+
+    // === Autres méthodes ===
 }
 

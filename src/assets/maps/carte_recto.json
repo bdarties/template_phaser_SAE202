@@ -467,12 +467,12 @@
                         {
                          "name":"item_name",
                          "type":"string",
-                         "value":"les Bottes de saut"
+                         "value":"les Bottes ressort"
                         }, 
                         {
                          "name":"item_type",
                          "type":"string",
-                         "value":"jump"
+                         "value":"double_jump"
                         }],
                  "rotation":0,
                  "type":"",

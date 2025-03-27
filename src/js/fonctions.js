@@ -398,14 +398,24 @@ export function powerUpCollect(player, item) {
         case "jump":
             player.increaseJumpHeight(item.proprietes.item_effect);
             break;
+        case "double_jump":
+            player.enableDoubleJump();
+            break;
+        case "triple_jump":
+            player.enableTripleJump();
+            break;
+        case "wall_jump":
+            player.enableWallJump();
+            break;
+        case "fly":
+            player.enableFlying();
+            break;
         case "change":
             player.setNewLook(item.proprietes);
             break;
-         case "speed":
+        case "speed":
             player.increaseSpeed(item.proprietes.item_effect);
             break;
-
-
     }
     // Mise en pause la scène actuelle
     this.scene.pause();
