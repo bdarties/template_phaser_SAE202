@@ -238,7 +238,6 @@ export default class map_verso extends Phaser.Scene {
       this.scene.start("win");
     }
     if (this.game.config.sceneTarget != "verso") return;
-    console.log("scene_verso");
     // spawn a partir d'un portail
     if (this.game.config.portalTarget != null) {
       fct.portalSpawning.call(this);
@@ -256,11 +255,9 @@ export default class map_verso extends Phaser.Scene {
     // le player veut monter 
     if (player.verticalDirection == "up" && player.onLadder) {
       if (player.isMoving == true) return true;
-      console.log('ici');
       return false;
     }
     if (this.ladder_layer != null && this.cursor.down.isDown) {
-      console.log('la');
       if (player.isMoving == true) return true;
       const TileDown = this.ladder_layer.getTileAtWorldXY(player.x, player.getBottomCenter().y + 1);
       if (TileDown != null) {

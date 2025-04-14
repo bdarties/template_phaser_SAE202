@@ -27,6 +27,8 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         this.isShooting = false;
         this.isMoving = true;
         this.isJumping = false;
+        this.remainingJump = 1;
+        this.baseRemainingJump = 1;
         this.onLadder = false;
         this.justCrossingPortal = false;
         this.invincible = false;
@@ -337,7 +339,6 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         this.onLadder = false;
         this.justCrossingPortal = false;
         this.invincible = false;
-
         this.prepareToJump = false;
         this.body.setVelocityX(0);
         this.body.setAccelerationX(0);
@@ -429,42 +430,44 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         else {
             this.flipX = true;
         }
-        if (this.body.onFloor()) {
-            this.isJumping = false;
-            this.setVelocityY(0);
-        }
-        
-        // Saut
-        // saut contrôlé
-        if (this.prepareToJump == true && Phaser.Input.Keyboard.JustUp(this.jumpKey)) {
-            this.body.setVelocityY(-1 * this.getJumpHeight() * ((50 + this.jumpKey.duration) / 180));
-            this.prepareToJump = false;
-            this.hasDoubleJumped = false; // Réinitialise l'état du double saut
-        }
-        if (this.jumpKey.isDown && this.body.onFloor()) {
-            this.prepareToJump = true;
-            if (this.jumpKey.getDuration() > 130) {
-                this.isJumping = true;
-                this.body.setVelocityY(-1 * this.getJumpHeight());
-                this.prepareToJump = false;
-                this.hasDoubleJumped = false; // Réinitialise l'état du double saut
-            }
-        }
 
-        // Gestion du double saut
-        if (Phaser.Input.Keyboard.JustDown(this.jumpKey)) {
-            console.log("double saut detecté");
-            console.log("canDoubleJump:", this.canDoubleJump());
-            console.log("isJumping:", this.isJumping);
-            console.log("onFloor:", this.body.onFloor());
-            console.log("hasDoubleJumped:", this.hasDoubleJumped);
-            console.log("résultat du test : ", this.canDoubleJump() && this.isJumping && !this.body.onFloor() && !this.hasDoubleJumped);
-            if (this.canDoubleJump() && this.isJumping && !this.body.onFloor() && !this.hasDoubleJumped) {
-                this.body.setVelocityY(-1 * this.getJumpHeight());
-                this.hasDoubleJumped = true; // Marque le double saut comme utilisé
-            }
-        }
 
+        // mise a jour du statut du saut (collision avec le sol, saut sur les murs, etc.)
+    	this.updateJumpStatut(); 
+
+		// sauf sans controle de puissance :
+		
+		if (this.jumpKey.isDown) {
+			this.jumpKey.duration += this.scene.game.loop.delta; // Increment the duration while the key is held
+		}
+
+		if (this.canJump() && Phaser.Input.Keyboard.JustDown(this.jumpKey)) 
+		{
+			console.log(this.jumpKey.duration);
+			this.jumpKey.duration = 0; // Reset the duration when the jump starts
+		
+
+			this.body.setVelocityY(-1 * this.getJumpHeight());
+			this.remainingJump--;	
+		}
+/*
+		// saut contrôlé
+		if (this.canJump() && this.prepareToJump == true && Phaser.Input.Keyboard.JustUp(this.jumpKey)) {
+			let jumpDuration = Math.min(this.jumpKey.duration, 130); // Limiter la durée à 130 ms max
+			this.body.setVelocityY(-1 * this.getJumpHeight() * (jumpDuration / 130));
+			this.prepareToJump = false;
+			this.remainingJump--;
+		}
+		if (this.jumpKey.isDown) {
+			this.prepareToJump = true;
+			if (this.canJump() && this.jumpKey.duration > 130) {
+			this.body.setVelocityY(-1 * this.getJumpHeight());
+			this.prepareToJump = false;
+			this.remainingJump--;
+			}
+		}
+
+*/
         if (this.coefDirection == -1) {
             this.flipX = !this.flipX;
         }
@@ -511,6 +514,29 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 
     // === Gestion des capacités spéciales ===
 
+    canJump() {
+        /* routine principale renvoyant true si le joueur peut sauter
+        integre les conditions de saut sur les murs, de double saut, de vol
+        */
+        if (this.canFly()) return true;
+        if (this.canWallJump() && (this.body.blocked.right == true || this.body.blocked.left == true)) return true; 
+        if (this.remainingJump > 0)  return true;
+    }
+
+    updateJumpStatut() {
+       /* met a jour les éléments permettant de calculer le statut de saut du player
+       */   
+               // contact du sol
+        if (this.body.onFloor()) {
+            this.isJumping = false;
+            this.remainingJump = this.baseRemainingJump;
+            this.setVelocityY(0);
+        }
+
+        
+        return true;
+    }
+
     /**
      * Vérifie si le joueur peut effectuer un double saut.
      */
@@ -519,19 +545,16 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     }
 
     /**
-     * Définit si le joueur peut effectuer un double saut.
-     * @param {boolean} value - Valeur à affecter.
-     */
-    setDoubleJump(value) {
-        this.playerProperties.canDoubleJump = value;
-    }
-
-    /**
      * Active la capacité de double saut pour le joueur.
      */
     enableDoubleJump() {
-        this.setDoubleJump(true);
-        console.log("double jump activé");
+		this.playerProperties.canDoubleJump = true;
+		
+        console.log("[debug] double jump activé");
+		if (this.remainingJump < 2 ) this.remainingJump = 2;
+		if (this.baseRemainingJump < 2 ) this.baseRemainingJump = 2;
+
+
     }
 
     /**
@@ -541,19 +564,15 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         return this.playerProperties.canTripleJump;
     }
 
-    /**
-     * Définit si le joueur peut effectuer un triple saut.
-     * @param {boolean} value - Valeur à affecter.
-     */
-    setTripleJump(value) {
-        this.playerProperties.canTripleJump = value;
-    }
 
     /**
      * Active la capacité de triple saut pour le joueur.
      */
     enableTripleJump() {
-        this.setTripleJump(true);
+		 this.playerProperties.canTripleJump = true;
+		if (this.remainingJump < 3 ) this.remainingJump = 3;
+		if (this.baseRemainingJump < 3 ) this.baseRemainingJump = 3;
+
     }
 
     /**
@@ -599,6 +618,16 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     enableWallJump() {
         this.setWallJump(true);
     }
+
+	/**
+	 * Réinitialise tous les power-ups du joueur.
+	 */
+	resetPowerUps() {
+ 		this.playerProperties.canTripleJump = false;
+ 		this.playerProperties.canDoubleJump = false;
+		this.remainingJump = 1;
+		console.log("[debug] Tous les power-ups ont été réinitialisés");
+	}
 
     // === Autres méthodes ===
 }

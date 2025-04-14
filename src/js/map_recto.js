@@ -221,7 +221,6 @@ export default class map_recto extends Phaser.Scene {
     }
 
     if (this.ladder_layer != null && this.cursor.down.isDown) {
-      console.log('la');
       if (player.isMoving == true) return true;
 
       const TileDown = this.ladder_layer.getTileAtWorldXY(player.x, player.getBottomCenter().y + 1);
@@ -247,28 +246,6 @@ export default class map_recto extends Phaser.Scene {
     this.scene.switch("map_verso");
   }
 
-  /*
-    portalSpawnnnning() {
-      var portalFound = false;
-      console.log('spwan sur potail : je suis sur recto');
-      console.log("chek de portail sur recto");
-  
-      this.grp_portal.children.iterate(function (portal) {
-        console.log("portail analyse : " + portal.id + " cible :" + this.game.config.portalTarget);
-  
-        if (portal.id == this.game.config.portalTarget) {
-          this.spawnPoint.x = portal.x;
-          this.spawnPoint.y = portal.y;
-          this.player.x = portal.x;
-          this.player.y = portal.y;
-          this.game.config.portalTarget = null;
-          portalFound = true;
-          return true;
-        }
-      }, this);
-      if (!portalFound) alert("destination inconnue dans map Recto: ");
-    }
-  */
 
 }
 

@@ -45,6 +45,7 @@ export default class loading extends Phaser.Scene {
                             .then(response => {
                                 if (response.ok) {
                                     self.load.image(fileNameWithoutExtension, directory + fileName);
+                                    console.log("image chargée "+fileNameWithoutExtension);
                                 } else {
                                     console.warn(`Fichier introuvable : ${directory + fileName}`);
                                 }

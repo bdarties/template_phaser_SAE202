@@ -10,7 +10,6 @@ export default class Item extends Phaser.Physics.Arcade.Sprite {
       if (typeof (this.proprietes.type) != 'undefined') {
        this.setTexture("item_"+this.proprietes.type);
        this.setDisplaySize(24,24);
-       
       }
       // Physique de l'item 
       scene.physics.world.enable(this); // Active la physique pour l'item

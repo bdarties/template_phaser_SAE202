@@ -141,7 +141,6 @@ export default class Enemy extends Phaser.Physics.Arcade.Sprite {
             else {
                 this.isBerserk = false;
             }
-            console.log("berserk : "+this.isBerserk+ " et jump:"+ this.isJumping + " et direction "+ this.direction);
         }
         if (this.body.blocked.down == true) this.isJumping = false;
 

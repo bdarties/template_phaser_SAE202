@@ -252,6 +252,7 @@ export function commonLayersCreation() {
     this.background_layer = this.map.createLayer("background_layer", this.tileset, 0, 0);
     this.background_2_layer = this.map.createLayer("background_2_layer", this.tileset, 0, 0);
     this.platform_layer = this.map.createLayer("platform_layer", this.tileset, 0, 0);
+   
     this.decoration_front_layer = this.map.createLayer("decoration_front_layer", this.tileset, 0, 0);
     this.decoration_back_layer = this.map.createLayer("decoration_back_layer", this.tileset, 0, 0);
     // gestion des profondeurs
@@ -287,22 +288,33 @@ export function killLayerCreation() {
     }
 }
 
-// creation des powerUp a partir du calque object_layer, si existant
+// creation des textures a partir du calque object_layer, si existant
 export function itemCreation() {
     if (this.map.getObjectLayerNames().includes("object_layer")) {
         const tab_objects = this.map.getObjectLayer("object_layer");
         var list_items = tab_objects.objects.filter(function (object) {
             return object.name === "item";
         });
+         // référence vers la texture par défaut
+        
+
         list_items.forEach(itemElement => {
+            var texture = "item_to_collect";
             var item;
             var proprietes = {};
             if (typeof (itemElement.properties) != 'undefined') {
                 itemElement.properties.forEach(property => {
                     proprietes[property.name] = property.value;
                 }, this);
+            
+                // ajout du style particulier si existant
+                var style = itemElement.properties.find(property => property.name === "style");
+                if (style) {
+                    texture = texture + "_" + style.value;
+                }
             }
-            item = new Item(this, itemElement.x, itemElement.y, "item_to_collect", proprietes);
+            // création de l'item avec la texture choisie
+            item = new Item(this, itemElement.x, itemElement.y, texture, proprietes);
             this.grp_items.add(item);
             item.setDepth(49);
         }, this);
@@ -312,7 +324,7 @@ export function itemCreation() {
     }
 }
 
-// creation des item a partir du calque object_layer, si existant
+// creation des powerup a partir du calque object_layer, si existant
 export function powerUpCreation() {
     if (this.map.getObjectLayerNames().includes("object_layer")) {
         const tab_objects = this.map.getObjectLayer("object_layer");
@@ -416,6 +428,8 @@ export function powerUpCollect(player, item) {
         case "speed":
             player.increaseSpeed(item.proprietes.item_effect);
             break;
+            case "reset" : 
+            player.resetPowerUps();
     }
     // Mise en pause la scène actuelle
     this.scene.pause();
