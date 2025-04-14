@@ -2,6 +2,34 @@ import Enemy from "./Enemy.js";
 import Item from "./Item.js";
 
 
+
+export async function chargerImagesNames(directory) {
+    return new Promise((resolve, reject) => {
+        fetch(directory)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("Erreur lors du chargement du répertoire : " + response.statusText);
+                }
+                return response.text();
+            })
+            .then(html => {
+                var parser = new DOMParser();
+                var doc = parser.parseFromString(html, "text/html");
+                console.log(doc);
+                var files = Array.from(doc.querySelectorAll("a"))
+                    .map(link => link.getAttribute("href"))
+                    .map(name => name.split('/').pop())
+                    .filter(name => name.startsWith( "portal") || name.startsWith("item_to_collect"))
+                  
+                resolve(files);
+            })
+            .catch(error => {
+                reject(error);
+            });
+    });
+}
+
+
 export async function chargerConfig(configFile) {
     return new Promise((resolve, reject) => {
         var xhr = new XMLHttpRequest();

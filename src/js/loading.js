@@ -12,6 +12,7 @@ import interfaceJeu from "./interfaceJeu.js";
 import dialogBox from "./dialogBox.js";
 
 var configFile = await fct.chargerConfig('./src/assets/config.txt');
+var imgFilesName = await fct.chargerImagesNames('./src/assets/images');
 
 export default class loading extends Phaser.Scene {
     // constructeur de la classe
@@ -21,40 +22,18 @@ export default class loading extends Phaser.Scene {
         });
 
     }
-    preload() {
-       /* chargement des textures de portail */
-        var directory = "src/assets/images/";
-        self = this;
-        // Utilisation de l'API Fetch pour récupérer la liste des fichiers du répertoire
-        fetch(directory)
-            .then(response => response.text())
-            .then(text => {
-                // Parsing du contenu HTML pour extraire les noms de fichiers
-                var parser = new DOMParser();
-                var htmlDoc = parser.parseFromString(text, "text/html");
-                var fileNodes = htmlDoc.querySelectorAll('a');
-                // Parcours des nœuds pour charger les images
-                fileNodes.forEach(function (node) {
-                    var filePath = node.getAttribute("href");
-                    var fileName = filePath.substring(filePath.lastIndexOf("/") + 1);
-                    // Si le fichier commence par "portal" et se termine par ".png"
-                    if ((fileName.startsWith("portal") || fileName.startsWith("item_to_collect_")) && fileName.endsWith(".png")) {
-                        var fileNameWithoutExtension = fileName.split(".")[0];
-                        // Vérification de l'existence du fichier avant de le charger
-                        fetch(directory + fileName, { method: 'HEAD' })
-                            .then(response => {
-                                if (response.ok) {
-                                    self.load.image(fileNameWithoutExtension, directory + fileName);
-                                    console.log("image chargée "+fileNameWithoutExtension);
-                                } else {
-                                    console.warn(`Fichier introuvable : ${directory + fileName}`);
-                                }
-                            })
-                            .catch(error => console.error(`Erreur lors de la vérification du fichier : ${directory + fileName}`, error));
-                    }
-                });
-            })
-            .catch(error => console.error('Erreur lors de la récupération des fichiers du répertoire :', error));
+    
+
+
+     preload() {
+        console.log("ci");
+console.log(imgFilesName) ;
+
+imgFilesName.forEach(fileName => {
+    const key = fileName.split('.').slice(0, -1).join('.');
+    this.load.image(key, `./src/assets/images/${fileName}`);
+});
+
 
 
         /* nous ne chargeons que les textures mais pas sous forme de spritesheet, nous les découpons apres */
