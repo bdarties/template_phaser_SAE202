@@ -16,20 +16,30 @@ export default class Playerconfig {
 		this.projectileSpeed = 500;
 		this.coolDownDuration = 400;
 		this.closeCombat = false;
+      	this.canShoot = false;
 
 		// gestion du double saut, triple saut, et vol
 		this.canDoubleJump = false;
 		this.canTripleJump = false;
 		this.canFly = false;
 		this.canWallJump = false;
+  
+
 
 		// écrasement des valeurs par défaut, si définies dans la config
-		var playerConfigNamesTable = ["speed", "jumpHeight", "projectileDuration", "projectileSpeed", "coolDownDuration", "closeCombat", "maxHealth", "lifes"];
+		var playerConfigNamesTable = ["speed", "jumpHeight", "projectileDuration", "projectileSpeed", "coolDownDuration", "closeCombat", "maxHealth", "lifes", "canShoot"];
 		playerConfigNamesTable.forEach(function (paramName, index) {
 			if (typeof (config["player_" + paramName]) != 'undefined') {
 				this[paramName] = config["player_" + paramName];
+				console.log("player_" + paramName + " : " + this[paramName]);
 			}
 		}, this);
+
+		if (this.canShoot == "false") {
+			this.canShoot = false;
+		}
+		else this.canShoot = true;
+		
 		// gravité
 		if (typeof (config.player_gravity) != 'undefined') {
 			this.gravity = config.player_gravity - config.default_gravity;

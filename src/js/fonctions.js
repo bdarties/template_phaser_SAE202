@@ -458,6 +458,10 @@ export function powerUpCollect(player, item) {
             break;
             case "reset" : 
             player.resetPowerUps();
+            break;
+        case "shoot":
+            player.enableShooting();
+            break;
     }
     // Mise en pause la scène actuelle
     this.scene.pause();

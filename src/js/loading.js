@@ -34,8 +34,6 @@ imgFilesName.forEach(fileName => {
     this.load.image(key, `./src/assets/images/${fileName}`);
 });
 
-
-
         /* nous ne chargeons que les textures mais pas sous forme de spritesheet, nous les découpons apres */
         this.load.image('player_move_right', './src/assets/spritesheets/player_move_right_spritesheet.png');
         this.load.image('player2_move_right', './src/assets/spritesheets/player2_move_right_spritesheet.png');
@@ -73,10 +71,13 @@ imgFilesName.forEach(fileName => {
         this.load.image("destination", "src/assets/images/destination.png");
         this.load.image("bullet", "src/assets/images/bullet.png");
         this.load.image("item_to_collect", "src/assets/images/item_to_collect.png");
-        this.load.image("item_jump", "src/assets/images/item_jump.png");
-        
-        this.load.image("item_doubleJump", "src/assets/images/item_doubleJump.png");
-        this.load.image("item_tripleJump", "src/assets/images/item_tripleJump.png");
+        this.load.image("item_reset", "src/assets/images/item_reset.png");  
+        this.load.image("item_jump", "src/assets/images/item_jump.png");  
+        this.load.image("item_double_jump", "src/assets/images/item_double_jump.png");
+        this.load.image("item_triple_jump", "src/assets/images/item_triple_jump.png");
+        this.load.image("item_wall_jump", "src/assets/images/item_wall_jump.png");
+        this.load.image("item_fly", "src/assets/images/item_fly.png");
+        this.load.image("item_shoot", "src/assets/images/item_shoot.png");
 
         // Écouter l'événement d'erreur de chargement
         this.load.on('loaderror', (file) => {
@@ -89,6 +90,14 @@ imgFilesName.forEach(fileName => {
         
         this.load.image("coeur", "src/assets/images/coeur.png");
 
+        /* chargement des sons */
+        this.load.audio("son_bullet", "src/assets/sounds/son_bullet.mp3");
+        this.load.audio("son_jump", "src/assets/sounds/son_jump.mp3");
+        this.load.audio("son_item", "src/assets/sounds/son_item.mp3");
+        //this.load.audio("son_game_over", "src/assets/sounds/son_game_over.mp3");
+       // this.load.audio("son_win", "src/assets/sounds/son_win.mp3");
+       // this.load.audio("son_background", "src/assets/sounds/son_background.mp3");
+      
         /* chargement des cartes */
         this.load.tilemapTiledJSON('map_recto', './src/assets/maps/carte_recto.json');
         this.load.tilemapTiledJSON('map_verso', './src/assets/maps/carte_verso.json');
@@ -102,7 +111,7 @@ imgFilesName.forEach(fileName => {
                 this.game.config.player_closeCombat = true;
             }
             // parcours des éléments de configuration pour player et ajout dans configFile
-            var playerConfigNamesTable = ["speed", "jumpHeight", "gravity", "projectileDuration", "projectileSpeed", "coolDownDuration", "maxHealth", "lifes"];      
+            var playerConfigNamesTable = ["speed", "jumpHeight", "gravity", "projectileDuration", "projectileSpeed", "coolDownDuration", "maxHealth", "lifes", "canShoot"];      
             playerConfigNamesTable.forEach(function (paramName, index) { 
                 if (typeof (configFile["player"][paramName]) != 'undefined') {
                   this.game.config["player_"+paramName] = configFile["player"][paramName];
@@ -174,6 +183,14 @@ imgFilesName.forEach(fileName => {
         console.log("Fichiers item_to_collect_*** chargés :", loadedItemToCollectFiles);
 
         this.game.config.default_gravity = this.physics.world.gravity.y;
+
+        // ajout des sons
+        this.game.config.son_bullet = this.sound.add("son_bullet");
+        this.game.config.son_jump = this.sound.add("son_jump");
+        this.game.config.son_item = this.sound.add("son_item");
+        //this.game.config.son_game_over = this.sound.add("son_game_over");
+        //this.game.config.son_win = this.sound.add("son_win");
+        
 
         // chargement des scenes
         this.scene.add('accueil', accueil, false);
