@@ -45,6 +45,16 @@ export default class accueil extends Phaser.Scene {
      bouton_controls.on("pointerup", () => {
       this.scene.switch("controls");
     });
+
+    if (this.sound.get("son_win")) {
+      this.sound.stopByKey("son_win");
+    }
+    if (this.sound.get("son_game_over")) {
+      this.sound.stopByKey("son_game_over");
+    }
+    if (this.sound.get("son_intro")) {
+      this.sound.play("son_intro", { loop: true });
+    }
     }
 
     udpate() {

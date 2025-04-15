@@ -102,6 +102,7 @@ imgFilesName.forEach(fileName => {
         this.load.audio("son_game_over", "src/assets/sounds/son_game_over.mp3");
         this.load.audio("son_win", "src/assets/sounds/son_win.mp3");
         this.load.audio("son_game", "src/assets/sounds/son_game.mp3");
+       this.load.audio("son_intro", "src/assets/sounds/son_intro.mp3");
       
         /* chargement des cartes */
         this.load.tilemapTiledJSON('map_recto', './src/assets/maps/carte_recto.json');
@@ -249,6 +250,11 @@ imgFilesName.forEach(fileName => {
             console.warn("Audio file 'son_game' not loaded properly.");
         }
         
+          if (this.cache.audio.exists("son_intro")) {
+            this.game.config.son_game = this.sound.add("son_intro");
+        } else {
+            console.warn("Audio file 'son_intro' not loaded properly.");
+        }
 
         // chargement des scenes
         this.scene.add('accueil', accueil, false);

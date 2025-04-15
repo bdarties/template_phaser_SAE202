@@ -34,6 +34,19 @@ export default class lose extends Phaser.Scene {
       this.scene.start("accueil");
     });
 
+this.sound.stopByKey('son_game');
+
+ if (!this.sound.get('son_game_over')) {
+      console.warn('Sound "son_game_over" not found in the sound manager.');
+     
+    }
+    else {
+    // Play the sound for the win screen
+    this.sound.play('son_game_over', {
+        loop: false
+    });
+    }
+    
     }
 
 

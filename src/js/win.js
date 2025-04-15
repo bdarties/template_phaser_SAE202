@@ -34,8 +34,20 @@ export default class win extends Phaser.Scene {
       this.scene.start("accueil");
     });
 
-    }
+    // Stop the sound from the previous scene
+    this.sound.stopByKey('son_game');
 
+    if (!this.sound.get('son_win')) {
+      console.warn('Sound "son_win" not found in the sound manager.');
+     
+    }
+    else {
+    // Play the sound for the win screen
+    this.sound.play('son_win', {
+        loop: false
+    });
+    }
+    }
 
     udpate() {
 
