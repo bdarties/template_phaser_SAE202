@@ -34,7 +34,7 @@ export default class map_verso extends Phaser.Scene {
 
 
     // creation du background + background parallax  
-    fct.backgroundCreation.call(this, "main_background_verso", "main_background_over_parallax_effect_verso");
+    fct.backgroundCreation.call(this, "main_background_verso", this.game.config.fixedBackgroundVerso, "main_background_over_parallax_effect_verso");
     //creation des calques usuels
     fct.commonLayersCreation.call(this);
     // creation du kill_layer et du death_layer

@@ -248,10 +248,15 @@ export function printMsg(player, zone) {
 }
 
 // creation du fond et du fond parallax
-export function backgroundCreation(background_image_key, parallax_background_image_key) {
+export function backgroundCreation( background_image_key,  resultFixed, parallax_background_image_key) {
     if (this.textures.exists(background_image_key)) {
-        this.background_image = this.add.image(this.game.config.width / 2, this.game.config.height / 2, background_image_key);
-      //  this.background_image.setScrollFactor(0);
+       if (resultFixed == false) {
+         this.background_image = this.add.image(0,0, background_image_key).setOrigin(0, 0);   
+       }
+       else {
+            this.background_image = this.add.image(this.game.config.width / 2, this.game.config.height / 2, background_image_key);
+             this.background_image.setScrollFactor(0);
+       }
     }
     if (this.textures.exists(parallax_background_image_key)) {
         this.fond = this.add.tileSprite(0, 0, this.game.config.width, this.game.config.height, parallax_background_image_key).setOrigin(0, 0);
@@ -278,10 +283,10 @@ export function groupsCreation() {
 export function commonLayersCreation() {
     // creation des layers
     this.background_layer = this.map.createLayer("background_layer", [this.tileset, this.tileset_extra], 0, 0);
-this.background_2_layer = this.map.createLayer("background_2_layer", [this.tileset, this.tileset_extra], 0, 0);
-this.platform_layer = this.map.createLayer("platform_layer", [this.tileset, this.tileset_extra], 0, 0);
-this.decoration_front_layer = this.map.createLayer("decoration_front_layer", [this.tileset, this.tileset_extra], 0, 0);
-this.decoration_back_layer = this.map.createLayer("decoration_back_layer", [this.tileset, this.tileset_extra], 0, 0);
+    this.background_2_layer = this.map.createLayer("background_2_layer", [this.tileset, this.tileset_extra], 0, 0);
+    this.platform_layer = this.map.createLayer("platform_layer", [this.tileset, this.tileset_extra], 0, 0);
+    this.decoration_front_layer = this.map.createLayer("decoration_front_layer", [this.tileset, this.tileset_extra], 0, 0);
+    this.decoration_back_layer = this.map.createLayer("decoration_back_layer", [this.tileset, this.tileset_extra], 0, 0);
    
     // gestion des profondeurs
     this.background_layer.setDepth(10);

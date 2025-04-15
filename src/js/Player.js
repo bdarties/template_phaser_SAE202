@@ -508,13 +508,29 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 
         // animations du player
         if (this.isShooting) {
-            this.anims.play(this.playerProperties.animShootName, true);
+            if (this.scene.anims.exists(this.playerProperties.animShootName)) {
+                this.anims.play(this.playerProperties.animShootName, true);
+            } else {
+                this.anims.play(this.playerProperties.animShootName_recto, true);
+            }
         } else if (this.isJumping) {
-            this.anims.play(this.playerProperties.animJumpName, true);
+            if (this.scene.anims.exists(this.playerProperties.animJumpName)) {
+                this.anims.play(this.playerProperties.animJumpName, true);
+            } else {
+                this.anims.play(this.playerProperties.animJumpName_recto, true);
+            }
         } else if (this.isMoving) {
-            this.anims.play(this.playerProperties.animMoveName, true);
+            if (this.scene.anims.exists(this.playerProperties.animMoveName)) {
+                this.anims.play(this.playerProperties.animMoveName, true);
+            } else {
+                this.anims.play(this.playerProperties.animMoveName_recto, true);
+            }
         } else {
-            this.anims.play(this.playerProperties.animStandtName, true);
+            if (this.scene.anims.exists(this.playerProperties.animStandtName)) {
+                this.anims.play(this.playerProperties.animStandtName, true);
+            } else {
+                this.anims.play(this.playerProperties.animStandtName_recto, true);
+            }
         }
     }
 

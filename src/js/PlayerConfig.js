@@ -61,17 +61,11 @@ export default class Playerconfig {
 
 		// Vérification si 'anim_player_shoot_right' est une clé d'animation du gestionnaire d'animation Phaser
 		// apparence dynamique_verso :
-		this.animShootName_verso = (typeof config.player_verso_shoot_right !== 'undefined') ? 'anim_player_verso_shoot_right' : this.animShootName;
-		this.animMoveName_verso = (typeof config.player_verso_move_right !== 'undefined') ? 'anim_player_verso_move_right' : this.animMoveName;
-		this.animJumpName_verso = (typeof config.player_verso_jump_right !== 'undefined') ? 'anim_player_verso_jump_right' : this.animJumpName;
-		this.animStandtName_verso = (typeof config.player_verso_stand_right !== 'undefined') ? 'anim_player_verso_stand_right' : this.animStandtName;
+		this.animShootName_verso =  'anim_player_verso_shoot_right';
+		this.animMoveName_verso =   'anim_player_verso_move_right';
+		this.animJumpName_verso = 'anim_player_verso_jump_right' ;
+		this.animStandtName_verso = 'anim_player_verso_stand_right' ;
 		
-		// Affichage des valeurs des animations verso
-		console.log("animShootName_verso: " + this.animShootName_verso);
-		console.log("et surtout "+ config.player_verso_move_right)
-		console.log("animMoveName_verso: " + this.animMoveName_verso);
-		console.log("animJumpName_verso: " + this.animJumpName_verso);
-		console.log("animStandtName_verso: " + this.animStandtName_verso);
 
 		console.log(config);
 		// initialisation des éléments dynamiques de jeu
@@ -82,7 +76,7 @@ export default class Playerconfig {
 	}
 
 	switchLevel(level) {
-		console.log("changement de textures");
+		console.log("changement de textures" + level);
 
 		if (level === 'recto') {
 			this.animShootName = this.animShootName_recto;
