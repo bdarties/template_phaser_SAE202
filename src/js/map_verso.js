@@ -30,6 +30,8 @@ export default class map_verso extends Phaser.Scene {
     this.map = this.make.tilemap({ key: 'map_verso' });
     // Ajouter le jeu de tuiles à la carte
     this.tileset = this.map.addTilesetImage('tileset_image', 'tileset_image');
+    this.tileset_extra = this.map.addTilesetImage('tileset_image_extra', 'tileset_image_extra');
+
 
     // creation du background + background parallax  
     fct.backgroundCreation.call(this, "main_background_verso", "main_background_over_parallax_effect_verso");

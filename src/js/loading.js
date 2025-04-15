@@ -36,10 +36,15 @@ imgFilesName.forEach(fileName => {
 
         /* nous ne chargeons que les textures mais pas sous forme de spritesheet, nous les découpons apres */
         this.load.image('player_move_right', './src/assets/spritesheets/player_move_right_spritesheet.png');
-        this.load.image('player2_move_right', './src/assets/spritesheets/player2_move_right_spritesheet.png');
         this.load.image('player_jump_right', './src/assets/spritesheets/player_jump_right_spritesheet.png');
         this.load.image('player_shoot_right', './src/assets/spritesheets/player_shoot_right_spritesheet.png');
         this.load.image('player_stand_right', './src/assets/spritesheets/player_stand_right_spritesheet.png');
+       
+        this.load.image('player_verso_move_right', './src/assets/spritesheets/player_move_right_spritesheet.png');
+        this.load.image('player_verso_jump_right', './src/assets/spritesheets/player_jump_right_spritesheet.png');
+        this.load.image('player_verso_shoot_right', './src/assets/spritesheets/player_shoot_right_spritesheet.png');
+        this.load.image('player_verso_stand_right', './src/assets/spritesheets/player_stand_right_spritesheet.png');
+       
         this.load.image('enemy_1_move_right', './src/assets/spritesheets/enemy_1_move_right_spritesheet.png');
         this.load.image('enemy_2_move_right', './src/assets/spritesheets/enemy_2_move_right_spritesheet.png');
         this.load.image('enemy_3_move_right', './src/assets/spritesheets/enemy_3_move_right_spritesheet.png');
@@ -102,6 +107,8 @@ imgFilesName.forEach(fileName => {
         this.load.tilemapTiledJSON('map_recto', './src/assets/maps/carte_recto.json');
         this.load.tilemapTiledJSON('map_verso', './src/assets/maps/carte_verso.json');
         this.load.image('tileset_image', './src/assets/maps/tileset_image.png');
+        this.load.image('tileset_image_extra', './src/assets/maps/tileset_image_extra.png');
+
     }
     create() {
         // chargement des caractéristiques du player
@@ -153,9 +160,12 @@ imgFilesName.forEach(fileName => {
 
 
         // chargement et calcul des dimensions du spritesheet player_move_right
-        var SpriteSheetNamesTable = ["player_move_right", "player2_move_right", "player_jump_right", "player_stand_right", "player_shoot_right", "enemy_1_move_right", "enemy_2_move_right", "enemy_2_shoot_right", "enemy_3_move_right", "enemy_3_jump_right", "enemy_4_move_right", "enemy_5_move_right", "projectile_player"];
+        var SpriteSheetNamesTable = ["player_move_right", "player_jump_right", "player_stand_right", "player_shoot_right",
+                                    "player_verso_move_right", "player_verso_jump_right", "player_verso_stand_right", "player_verso_shoot_right",
+         "enemy_1_move_right", "enemy_2_move_right", "enemy_2_shoot_right", "enemy_3_move_right", "enemy_3_jump_right", "enemy_4_move_right", "enemy_5_move_right", "projectile_player"];
         this.game.config.ss = [];
         SpriteSheetNamesTable.forEach(function (ssname, index) {
+            // si la texture a ete chargée
             if (this.textures.exists(ssname)) {
 
                 this.game.config.ss[ssname] = {};
@@ -227,8 +237,11 @@ imgFilesName.forEach(fileName => {
                 remainingMonsters++;
             }
             if (point.name == "item") {
-                if (typeof (point.properties) == 'undefined') {
+                if (typeof (point.properties) == 'undefined' || point.properties[0].name != "type") {
                 remainingItems++;
+            }
+            else {
+                console.log(point.properties)
             }
             }
         }, this);

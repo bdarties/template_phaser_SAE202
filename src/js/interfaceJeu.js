@@ -17,9 +17,9 @@ export default class interfaceJeu extends Phaser.Scene {
         this.remainingEnemies = this.sys.settings.data.remainingMonsters;
         this.remainingItems = this.sys.settings.data.remainingItems;
         this.destinationReached = false;
-
         this.enemis_to_kill = this.sys.settings.data.remainingMonsters;;
         this.items_to_collect = this.sys.settings.data.remainingItems;;
+        this.currentLevel = "recto";
         // récupération des objectifs dans l'interface
         this.objectives = {};
         this.objectives["kill_them_all"] = this.game.config.objective_kill_them_all;
@@ -83,6 +83,19 @@ export default class interfaceJeu extends Phaser.Scene {
             });
         }
 
+    }
+
+    switchLevel() {
+       console.log("changement de level");
+
+        if (this.currentLevel === "recto") {
+            this.currentLevel = "verso";
+        } else {
+            this.currentLevel = "recto";
+        }
+        this.playerProperties.switchLevel(this.currentLevel);
+  
+        return this.currentLevel;
     }
 
     afficherVies() {
