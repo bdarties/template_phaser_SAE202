@@ -28,11 +28,11 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         this.isMoving = true;
         this.isJumping = false;
         this.remainingJump = 1;
-        this.baseRemainingJump = 1;
+        this.playerProperties.baseRemainingJump = 1;
         this.onLadder = false;
         this.justCrossingPortal = false;
         this.invincible = false;
-         this.hasDoubleJumped = false; 
+        this.hasDoubleJumped = false; 
 
         // gestion de l'arme
         this.closeCombat = this.scene.game.config.player_closeCombat;
@@ -104,12 +104,21 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     }
 
     /**
+     * Augmente la distance de tir .
+     * @param {number} increaseLengthValue - Valeur d'augmentation.
+     */
+    increaseProjectileLength(increaseLengthValue) {
+        this.playerProperties.projectileDistance += increaseLengthValue;
+    }
+
+ 
+    /**
      * Augmente la vitesse du joueur.
      * @param {number} increaseSpeedValue - Valeur d'augmentation.
      */
-    increaseSpeed(increaseSpeedValue) {
+    increaseSpeed(increaseSpeedValue) {  
         this.playerProperties.speed += increaseSpeedValue;
-    }
+     }
 
     // === Gestion des attributs liés au combat ===
 
@@ -117,7 +126,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
      * Retourne la durée de vie des projectiles.
      */
     getProjectileDuration() {
-        return this.playerProperties.projectileDuration;
+      return this.playerProperties.projectileDistance / this.playerProperties.projectileSpeed * 1000
     }
 
     /**
@@ -448,12 +457,14 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 
 		if (this.canJump() && Phaser.Input.Keyboard.JustDown(this.jumpKey)) 
 		{
+            this.isJumping=true;
 			console.log(this.jumpKey.duration);
 			this.jumpKey.duration = 0; // Reset the duration when the jump starts
 		
 
 			this.body.setVelocityY(-1 * this.getJumpHeight());
 			this.remainingJump--;	
+            console.log("statut" + this.playerProperties.canDoubleJump + " " + this.playerProperties.canTripleJump+ " " + this.playerProperties.canFly  + " " + this.playerProperties.canWallJump);
 		}
 /*
 		// saut contrôlé
@@ -560,7 +571,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
                // contact du sol
         if (this.body.onFloor()) {
             this.isJumping = false;
-            this.remainingJump = this.baseRemainingJump;
+            this.remainingJump = this.playerProperties.baseRemainingJump;
             this.setVelocityY(0);
         }    
 
@@ -581,7 +592,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     enableDoubleJump() {
 		this.playerProperties.canDoubleJump = true;		
 		if (this.remainingJump < 2 ) this.remainingJump = 2;
-		if (this.baseRemainingJump < 2 ) this.baseRemainingJump = 2;
+		if (this.playerProperties.baseRemainingJump < 2 ) this.playerProperties.baseRemainingJump = 2;
     }
 
     /**
@@ -597,7 +608,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     enableTripleJump() {
 		 this.playerProperties.canTripleJump = true;
 		if (this.remainingJump < 3 ) this.remainingJump = 3;
-		if (this.baseRemainingJump < 3 ) this.baseRemainingJump = 3;
+		if (this.playerProperties.baseRemainingJump < 3 ) this.playerProperties.baseRemainingJump = 3;
 
     }
 
@@ -639,7 +650,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         this.playerProperties.canWallJump = false;
         this.playerProperties.canFly = false;
         this.playerProperties.jumpHeight = this.scene.game.config.player_jumpHeight;
-		this.remainingJump = 1;
+		this.playerProperties.baseRemainingJump = 1;
 		console.log("[debug] Tous les power-ups ont été réinitialisés");
 	}
 

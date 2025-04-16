@@ -103,15 +103,8 @@ export default class map_recto extends Phaser.Scene {
       if (point.name == "portal") {
         var portal_properties = {};
         point.properties.forEach(property => {
-          if (property.name == "id") {
-            portal_properties.id = property.value;
-          }
-          if (property.name == "target") {
-            portal_properties.target = property.value;
-          }
-          if (property.name == "style") {
-            portal_properties.style = property.value;
-          }
+          portal_properties[property.name] = property.value;
+          
         }, this);
 
         var portal_texture;
@@ -123,10 +116,17 @@ export default class map_recto extends Phaser.Scene {
         portal.id = portal_properties.id;
         portal.target = portal_properties.target;
 
+        // ajout de la cle si necessaire
+        if (typeof (portal_properties.key) != 'undefined') {
+        portal.locked = true;
+        portal.requiredKey = portal_properties.key;        
+        }
+        else portal.locked = false;
+
         this.grp_portal.add(portal);
         portal.body.allowGravity = false;
 
-        console.log("[r] portail créé: id " + portal.id + " target : " + portal.target);
+        console.log("[r] portail créé: id " + portal.id + " target : " + portal.target + "avec clef? " + portal.locked);
         portal.setDepth(47);
         // activation du portail
         this.physics.add.overlap(this.player, portal, this.portalActivation, function () {
@@ -246,6 +246,17 @@ export default class map_recto extends Phaser.Scene {
   }
 
   portalActivation(player, portal) {
+      if (portal.locked == true) {
+      if (player.playerProperties.isInInventory((portal.requiredKey))) {
+        // on a la clef
+        portal.locked = false;
+      } 
+      else {       
+      alert ("portail verrouillé, il vous faut la clef num" + portal.requiredKey);
+        return;
+      }
+    }
+
     this.target = portal.target;
     console.log('activation de potail sur Recto, je vais vers verso');
     console.log("direction le portail num" + portal.target);

@@ -19,7 +19,7 @@ export async function chargerImagesNames(directory) {
                 var files = Array.from(doc.querySelectorAll("a"))
                     .map(link => link.getAttribute("href"))
                     .map(name => name.split('/').pop())
-                    .filter(name => name.startsWith( "portal") || name.startsWith("item_to_collect"))
+                    .filter(name => name.startsWith( "portal") || name.startsWith("item"))
                   
                 resolve(files);
             })
@@ -467,6 +467,10 @@ export function powerUpCollect(player, item) {
         case "shoot":
             player.enableShooting();
             break;
+        case "long_shot":
+            player.increaseProjectileLength(item.proprietes.item_effect);
+            break;
+
     }
     // Mise en pause la scène actuelle
     this.scene.pause();
@@ -484,6 +488,11 @@ export function itemCollect(player, item) {
         var interfaceScene = this.scene.get('interfaceJeu');
         interfaceScene.afficherCoeurs();
     }
+
+    if (item.getType() == "key") {
+        player.playerProperties.addToInventory(item.proprietes.id);
+    }
+
     item.destroy();
 }
 

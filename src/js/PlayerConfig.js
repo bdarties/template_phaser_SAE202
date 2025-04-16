@@ -9,12 +9,14 @@ export default class Playerconfig {
 		
 		this.maxHealth = 4;
 		this.lifes = 4;
-		this.acceleration = 250;
+		this.acceleration = 350;
 		this.speed = 300;
 		this.jumpHeight = 600;
 		this.gravity = 350;
-		this.projectileDuration = 400;
-		this.projectileSpeed = 500;
+		this.projectileDistance = 300; // distance en pixel
+		this.projectileSpeed = 800; // vitesse en pixel / seconde
+		this.projectileDuration = this.projectileDistance / this.projectileSpeed * 1000; // durée = distance / vitesse
+
 		this.coolDownDuration = 400;
 		this.closeCombat = false;
       	this.canShoot = false;
@@ -25,6 +27,8 @@ export default class Playerconfig {
 		this.canFly = false;
 		this.canWallJump = false;
   
+		// Initialisation de l'inventaire
+		this.inventaire = [];
 
 
 		// écrasement des valeurs par défaut, si définies dans la config
@@ -40,6 +44,8 @@ export default class Playerconfig {
 			this.canShoot = false;
 		}
 		else this.canShoot = true;
+		this.projectileDuration = this.projectileDistance / this.projectileSpeed * 1000; // durée = distance / vitesse
+
 
 		// gravité
 		if (typeof (config.player_gravity) != 'undefined') {
@@ -90,5 +96,15 @@ export default class Playerconfig {
 			this.animStandtName = this.animStandtName_verso;
 		}
 		console.log("Current animMoveName: " + this.animMoveName);
+	}
+
+	addToInventory(item) {
+			this.inventaire.push(item);
+			console.log("valeur "+item + " ajoutée à l'inventaire");
+		
+	}
+
+	isInInventory(item) {
+		return this.inventaire.includes(item);
 	}
 }

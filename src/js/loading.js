@@ -277,7 +277,7 @@ imgFilesName.forEach(fileName => {
                 remainingMonsters++;
             }
              if (point.name == "item") {
-                if (typeof (point.properties) == 'undefined') {
+                if (typeof (point.properties) == 'undefined' || point.properties[0].name != "type") {
                 remainingItems++;
             }
              }

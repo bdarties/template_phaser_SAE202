@@ -256,7 +256,7 @@ export default class Enemy extends Phaser.Physics.Arcade.Sprite {
             this.scene.grp_bullet_enemy.add(projectile);
             projectile.body.allowGravity = false;
             projectile.setVelocityX(this.projectileSpeed); // Définir la vitesse du projectile
-
+            projectile.setDepth(200);
             // Si le joueur est orienté vers la gauche, inverser la direction du projectile
             if (this.flipX) {
                 projectile.flipX = true;
