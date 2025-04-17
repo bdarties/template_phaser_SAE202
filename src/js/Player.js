@@ -572,7 +572,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         if (this.body.onFloor()) {
             this.isJumping = false;
             this.remainingJump = this.playerProperties.baseRemainingJump;
-            this.setVelocityY(0);
+            
         }    
 
   

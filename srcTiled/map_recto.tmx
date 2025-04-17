@@ -1753,7 +1753,7 @@ légèrement augmentée</property>
     <property name="id_text" type="int" value="8"/>
    </properties>
   </object>
-  <object id="82" name="zone" x="1452" y="2514" width="258" height="108">
+  <object id="82" name="zone" x="1458" y="2539" width="258" height="108">
    <properties>
     <property name="id_text" type="int" value="10"/>
    </properties>
