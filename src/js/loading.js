@@ -12,7 +12,7 @@ import interfaceJeu from "./interfaceJeu.js";
 import dialogBox from "./dialogBox.js";
 
 // extraction des éléments du fichier de configuration
-var configFile = await fct.chargerConfig('./src/assets/config.txt');
+var { game: gameConfig, player: playerConfig, ennemis: ennemisConfig, spritesheetConfig: spritesheetRawConfig } = await fct.chargerConfig('./src/assets/config.txt');
 // liste des fichiers du répertoire image
 var imgFilesName = await fct.chargerImagesNames('./src/assets/images');
 // liste des fichiers du répertoire spritesheet
@@ -111,52 +111,35 @@ export default class loading extends Phaser.Scene {
     create() {
         // chargement des caractéristiques du player
         this.game.config.player_closeCombat = false;
-        if (typeof (configFile["player"]) != 'undefined') {
-            if (typeof (configFile["player"].closeCombat) != 'undefined' && configFile["player"].closeCombat == "true") {
+        if (playerConfig) {
+            if (playerConfig.closeCombat === true) {
                 this.game.config.player_closeCombat = true;
             }
-            // parcours des éléments de configuration pour player et ajout dans configFile
+            // parcours des éléments de configuration pour player et ajout dans game.config
             var playerConfigNamesTable = ["speed", "jumpHeight", "gravity", "projectileDuration", "projectileSpeed", "coolDownDuration", "maxHealth", "lifes", "canShoot"];      
             playerConfigNamesTable.forEach(function (paramName, index) { 
-                if (typeof (configFile["player"][paramName]) != 'undefined') {
-                    this.game.config["player_"+paramName] = configFile["player"][paramName];
+                if (typeof (playerConfig[paramName]) != 'undefined') {
+                    this.game.config["player_"+paramName] = playerConfig[paramName];
                 }
             }, this);
             
         }
         // chargement des conditions de victoire du jeu 
-        if (typeof (configFile["game"]) != 'undefined') {
-            if (typeof (configFile["game"].objective_kill_them_all) != 'undefined' && configFile["game"].objective_kill_them_all == "true") {
-                this.game.config.objective_kill_them_all = true;
-            }
-            else this.game.config.objective_kill_them_all = false;
-            if (typeof (configFile["game"].objective_collect_all_items) != 'undefined' && configFile["game"].objective_collect_all_items == "true") {
-                this.game.config.objective_collect_all_items = true;
-            }
-            else this.game.config.objective_collect_all_items = false;
-            if (typeof (configFile["game"].objective_reach_destination) != 'undefined' && configFile["game"].objective_reach_destination == "true") {
-                this.game.config.objective_reach_destination = true;
-            }
-            else this.game.config.objective_reach_destination = false;
+        if (gameConfig) {
+            this.game.config.objective_kill_them_all = gameConfig.objective_kill_them_all === true;
+            this.game.config.objective_collect_all_items = gameConfig.objective_collect_all_items === true;
+            this.game.config.objective_reach_destination = gameConfig.objective_reach_destination === true;
+            
             // objectif : terminer dans le temps imparti
-            if (typeof (configFile["game"].objective_complete_in_time) != 'undefined' && typeof (configFile["game"].objective_max_time) != 'undefined' && configFile["game"].objective_complete_in_time == "true") {
+            if (gameConfig.objective_complete_in_time === true && typeof gameConfig.objective_max_time !== 'undefined') {
                 this.game.config.objective_complete_in_time = true;
-                this.game.config.objective_max_time = configFile["game"].objective_max_time;
+                this.game.config.objective_max_time = gameConfig.objective_max_time;
             }
             else this.game.config.objective_complete_in_time = false;
             
             // Chargement des fonds d'écran totaux pour recto et verso
-            if (typeof (configFile["game"].fixedBackgroundRecto) != 'undefined' && configFile["game"].fixedBackgroundRecto == "true") {
-                this.game.config.fixedBackgroundRecto = true;
-            } else {
-                this.game.config.fixedBackgroundRecto = false;
-            }
-            
-            if (typeof (configFile["game"].fixedBackgroundVerso) != 'undefined' && configFile["game"].fixedBackgroundVerso == "true") {
-                this.game.config.fixedBackgroundVerso = true;
-            } else {
-                this.game.config.fixedBackgroundVerso = false;
-            }
+            this.game.config.fixedBackgroundRecto = gameConfig.fixedBackgroundRecto === true;
+            this.game.config.fixedBackgroundVerso = gameConfig.fixedBackgroundVerso === true;
             
             console.log("objectifs chargés :");
             console.log("- kill them all : " + this.game.config.objective_kill_them_all);
@@ -166,49 +149,64 @@ export default class loading extends Phaser.Scene {
         else console.log("Aucun objectif trouvé");
         
         // configuration particuliere : retourner la map verso
-        this.game.config.reverse_map_verso =  ((typeof (configFile["game"]) != 'undefined' && typeof (configFile["game"].reverse_map_verso) != 'undefined' && configFile["game"].reverse_map_verso=="true") ? true : false);
+        this.game.config.reverse_map_verso = (gameConfig && gameConfig.reverse_map_verso === true);
+        
+        // configuration du scale du player par map
+        this.game.config.initial_scale_recto = (gameConfig && typeof gameConfig.initial_scale_recto !== 'undefined') ? gameConfig.initial_scale_recto : 1;
+        this.game.config.initial_scale_verso = (gameConfig && typeof gameConfig.initial_scale_verso !== 'undefined') ? gameConfig.initial_scale_verso : 1;
+        this.game.config.keep_scale_ratio_between_maps = !(gameConfig && gameConfig.keep_scale_ratio_between_maps === false);
+        
+        // stockage de la config ennemis pour usage ultérieur
+        this.game.config.ennemisConfig = ennemisConfig;
         
         
-        // chargement et calcul des dimensions du spritesheet player_move_right
-        var SpriteSheetNamesTable = ["player_move_right", "player_jump_right", "player_stand_right", "player_shoot_right",
-            "player_verso_move_right", "player_verso_jump_right", "player_verso_stand_right", "player_verso_shoot_right",
-            "enemy_1_move_right", "enemy_2_move_right", "enemy_2_shoot_right", "enemy_3_move_right", "enemy_3_jump_right", "enemy_4_move_right", "enemy_5_move_right", "projectile_player"];
-            this.game.config.ss = [];
-            console.log("fichier spritecheet :")
+        // chargement et calcul des dimensions des spritesheets
+            // on calcule SpriteSheetNamesTable à partir de spritesheetsFilesName : on enleve _spritesheet.png à la fin de chaque entrée de spritesheetsFilesName
+            var SpriteSheetNamesTable = spritesheetsFilesName.map(name => name.replace("_spritesheet.png", ""));
+            
+            var spritesheetConfig = {};
+            console.log("fichier spritesheet :");
             console.log(spritesheetsFilesName);
             console.log(SpriteSheetNamesTable);
-
-            // on calcule SpriteSheetNamesTable à partir de spritesheetsFilesName : on enleve _spritesheet.png à la fin de chaque entrée de spritesheetsFilesName
             
+            // creation des spritesheet a partir des images et des informations de spritesheetRawConfig
+            SpriteSheetNamesTable.forEach(function (ss_name, index) {
+                
+                if (this.textures.exists(ss_name)) { // la texture est chargée
+                    if(typeof spritesheetRawConfig[ss_name] !== 'undefined') { 
+                        // des elements de configuration ont été trouvé dans config.txt  
+                        // chargements des elements de configuration de spritesheet dans le registry               
+                        spritesheetConfig[ss_name] = {};                
+                        spritesheetConfig[ss_name].nbFrames = spritesheetRawConfig[ss_name].nbFrames;
+                        spritesheetConfig[ss_name].frameDuration = spritesheetRawConfig[ss_name].frameDuration || 100;
+                        spritesheetConfig[ss_name].width = this.textures.get(ss_name).getSourceImage().width;
+                        spritesheetConfig[ss_name].height = this.textures.get(ss_name).getSourceImage().height;
+                        spritesheetConfig[ss_name].frameWidth = spritesheetConfig[ss_name].width / spritesheetConfig[ss_name].nbFrames;
+                        spritesheetConfig[ss_name].frameHeight = spritesheetConfig[ss_name].height;
+                        this.textures.addSpriteSheet(ss_name + '_SS', this.textures.get(ss_name).getSourceImage(), { frameWidth: spritesheetConfig[ss_name].frameWidth, frameHeight: spritesheetConfig[ss_name].frameHeight });
+                        console.log("[debug] ajout du spritesheet " + ss_name + "_SS - dimensions:  [" + spritesheetConfig[ss_name].frameWidth + ";" + spritesheetConfig[ss_name].frameHeight+"]");
+                        this.anims.create({
+                            key: 'anim_' + ss_name,
+                            frames: this.anims.generateFrameNumbers(ss_name + '_SS', { start: 0, end: spritesheetRawConfig[ss_name].nbFrames - 1 }),
+                            duration: spritesheetConfig[ss_name].frameDuration * spritesheetConfig[ss_name].nbFrames
+                        });
+                        console.log("[debug] ajout de l'animation " + ss_name + "_SS - dimensions:  [" + spritesheetConfig[ss_name].frameWidth + ";" + spritesheetConfig[ss_name].frameHeight+"]");
+                        
+                    console.log("creation de l'animation " + 'anim_' + ss_name + " avec  " + spritesheetRawConfig[ss_name].nbFrames + " frames");
+                    }
+                    else {
 
-
-            
-            SpriteSheetNamesTable.forEach(function (ssname, index) {
-                // si la texture a ete chargée
-                if (this.textures.exists(ssname)) {
-                    console.log("trouvé " + ssname)
-                    this.game.config.ss[ssname] = {};
-                    console.log(ssname + ">" + this.game.config.ss[ssname]);
-                    
-                    this.game.config.ss[ssname].nbFrames = configFile[ssname].nbFrames;
-                    this.game.config.ss[ssname].width = this.textures.get(ssname).getSourceImage().width;
-                    console.log(this.game.config.ss[ssname].width);
-                    this.game.config.ss[ssname].height = this.textures.get(ssname).getSourceImage().height;
-                    this.game.config.ss[ssname].frameWidth = this.game.config.ss[ssname].width / this.game.config.ss[ssname].nbFrames;
-                    this.game.config.ss[ssname].frameHeight = this.game.config.ss[ssname].height;
-                    var b = this.textures.addSpriteSheet(ssname + '_SS', this.textures.get(ssname).getSourceImage(), { frameWidth: this.game.config.ss[ssname].frameWidth, frameHeight: this.game.config.ss[ssname].frameHeight });
-                    console.log("creation du spritesheet " + ssname + "_SS de dimension  " + this.game.config.ss[ssname].frameWidth + " / " + this.game.config.ss[ssname].frameHeight);
-                    this.anims.create({
-                        key: 'anim_' + ssname,
-                        frames: this.anims.generateFrameNumbers(ssname + '_SS', { start: 0, end: configFile[ssname].nbFrames - 1 }),
-                        frameRate: 10
-                    });
-                    console.log("creation de l'animation " + 'anim_' + ssname + " avec  " + configFile[ssname].nbFrames + " frames");
+                    }
                 }
                 else {
-                    console.log ("non trouvé " + ssname);
+                    console.log ("[error] texture non trouvée : " + ss_name);
+                    console.log ("[error] note : cette configuration ne devrait pas arriver!");
+                    
                 }
             }, this);
+            
+            // stockage des spritesheets dans le registry Phaser (accessible depuis toutes les scènes)
+            this.registry.set('spritesheetConfig', spritesheetConfig);
             
             // Test pour afficher les noms des fichiers item_to_collect_*** chargés
             const loadedItemToCollectFiles = Object.keys(this.textures.list).filter(textureName => textureName.startsWith("item_to_collect_"));

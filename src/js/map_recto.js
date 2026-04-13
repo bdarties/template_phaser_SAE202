@@ -16,6 +16,11 @@ export default class map_recto extends Phaser.Scene {
     // Joueur et clavier
     fct.playerCreation.call(this);
     this.player = new Player(this, 100, 150, "player_move_right_SS");
+    // application du scale initial pour la map recto
+    var scaleRecto = this.game.config.initial_scale_recto || 1;
+    this.player.setScale(scaleRecto);
+    this.player.body.setSize(this.player.frame.width, this.player.frame.height);
+    this.player.body.setOffset(0, 0);
     this.cursor   = this.input.keyboard.createCursorKeys();
     this.actionKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SEMICOLON);
 
@@ -126,6 +131,8 @@ export default class map_recto extends Phaser.Scene {
     }
     this.game.config.portalTarget = portal.target;
     this.game.config.sceneTarget  = "verso";
+    // sauvegarde du scale actuel du player avant le switch
+    this.game.config.playerScaleBeforeSwitch = this.player.scaleX;
     this.scene.switch("map_verso");
   }
 }

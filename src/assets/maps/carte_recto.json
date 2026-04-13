@@ -650,29 +650,29 @@
                         {
                          "name":"item_description",
                          "type":"string",
-                         "value":"La hauteur de vos sauts est\nl\u00e9g\u00e8rement augment\u00e9e"
+                         "value":"vous etes plus grand"
                         }, 
                         {
                          "name":"item_effect",
                          "type":"int",
-                         "value":30
+                         "value":2
                         }, 
                         {
                          "name":"item_name",
                          "type":"string",
-                         "value":"les Bottes de saut"
+                         "value":"agrandisseur"
                         }, 
                         {
                          "name":"item_type",
                          "type":"string",
-                         "value":"jump"
+                         "value":"scale"
                         }],
                  "rotation":0,
                  "type":"",
                  "visible":true,
                  "width":0,
-                 "x":928,
-                 "y":672
+                 "x":2118,
+                 "y":675
                 }, 
                 {
                  "height":0,
@@ -1008,6 +1008,39 @@
                  "width":0,
                  "x":420,
                  "y":290
+                }, 
+                {
+                 "height":0,
+                 "id":90,
+                 "name":"powerUp",
+                 "point":true,
+                 "properties":[
+                        {
+                         "name":"item_description",
+                         "type":"string",
+                         "value":"La hauteur de vos sauts est\nl\u00e9g\u00e8rement augment\u00e9e"
+                        }, 
+                        {
+                         "name":"item_effect",
+                         "type":"int",
+                         "value":30
+                        }, 
+                        {
+                         "name":"item_name",
+                         "type":"string",
+                         "value":"les Bottes de saut"
+                        }, 
+                        {
+                         "name":"item_type",
+                         "type":"string",
+                         "value":"jump"
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":0,
+                 "x":931,
+                 "y":662
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -1528,7 +1561,7 @@
          "y":0
         }],
  "nextlayerid":12,
- "nextobjectid":90,
+ "nextobjectid":91,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.4.3",

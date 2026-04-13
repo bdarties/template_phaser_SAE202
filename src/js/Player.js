@@ -14,8 +14,18 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         this.setCollideWorldBounds(true);
         this.setDepth(50);
         this.body.setMaxVelocityY(400);
-        this.displayWidth = 48;
-        this.displayHeight = 64;
+
+        // origine en bas-centre : les pieds du joueur sont toujours au point (x, y)
+        this.setOrigin(0.5, 1);
+        // hitbox initiale basée sur la texture de départ
+        this.body.setSize(this.frame.width, this.frame.height);
+        this.body.setOffset(0, 0);
+
+        // adapter la hitbox automatiquement à chaque changement d'animation
+        this.on('animationstart', () => {
+            this.body.setSize(this.frame.width, this.frame.height);
+            this.body.setOffset(0, 0);
+        });
 
         if (typeof (this.scene.game.config.player_gravity) != 'undefined') {
             this.gravity = this.scene.game.config.player_gravity - this.scene.physics.world.gravity.y;
@@ -155,7 +165,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         }
         // attaque au corps à corps
         if (this.closeCombat == true) {
-            this.weapon.enableBody(true, this.x, this.y, true, true);
+            this.weapon.enableBody(true, this.x, this.y - this.body.height / 2, true, true);
             this.weaponEnabled = true;
             this.scene.time.delayedCall(500, function () {
                 this.weapon.disableBody(true, true);
@@ -165,11 +175,12 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         // attaque a distance
         else {
             var projectile;
+            var projectileY = this.y - this.body.height / 2;
             if (this.scene.anims.exists("anim_projectile_player")) {
-                projectile = this.scene.physics.add.sprite(this.x, this.y, 'projectile_player_SS');
+                projectile = this.scene.physics.add.sprite(this.x, projectileY, 'projectile_player_SS');
             }
             else
-                projectile = this.scene.physics.add.sprite(this.x, this.y, 'bullet');
+                projectile = this.scene.physics.add.sprite(this.x, projectileY, 'bullet');
             this.scene.grp_bullet_player.add(projectile);
             projectile.body.allowGravity = false;
             projectile.setDepth(50);
@@ -178,10 +189,10 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
             if (this.flipX == true) {
                 projectile.setVelocityX(-this.getProjectileSpeed());
                 projectile.flipX = true;
-                projectile.x = projectile.x - this.scene.game.config.ss["player_shoot_right"].width / (2 * this.scene.game.config.ss["player_shoot_right"].nbFrames);
+                projectile.x = projectile.x - this.scene.registry.get('spritesheetConfig')["player_shoot_right"].width / (2 * this.scene.registry.get('spritesheetConfig')["player_shoot_right"].nbFrames);
             }
             else {
-                projectile.x = projectile.x + this.scene.game.config.ss["player_shoot_right"].width / (2 * this.scene.game.config.ss["player_shoot_right"].nbFrames);
+                projectile.x = projectile.x + this.scene.registry.get('spritesheetConfig')["player_shoot_right"].width / (2 * this.scene.registry.get('spritesheetConfig')["player_shoot_right"].nbFrames);
             }
             // lancement de l'animation du spritesheet projectile si elle existe
             if (this.scene.anims.exists("anim_projectile_player")) {
@@ -506,24 +517,29 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
             console.log(this.canShoot());
             this.isShooting = true;
             this.fire();
+            // jouer l'animation de tir une seule fois
+            var shootAnim = this.scene.anims.exists(this.playerProperties.animShootName)
+                ? this.playerProperties.animShootName
+                : this.playerProperties.animShootName_recto;
+            this.shootAnimPlaying = true;
+            this.anims.play(shootAnim);
+            this.once('animationcomplete', () => {
+                this.shootAnimPlaying = false;
+            });
             this.scene.time.delayedCall(this.getCoolDownDuration(), () => {
                 this.isShooting = false;
             });
         }
         // Si attaque au corps à corps : mise à jour de l'arme de poing
         if (this.closeCombat == true && this.weaponEnabled == true) {
-            this.weapon.y = this.y;
+            this.weapon.y = this.y - this.body.height / 2;
             var coefDirection = (this.flipX == false ? 1 : -1);
-            this.weapon.x = this.x + coefDirection * this.scene.game.config.ss["player_shoot_right"].width / (2 * this.scene.game.config.ss["player_shoot_right"].nbFrames);
+            this.weapon.x = this.x + coefDirection * this.scene.registry.get('spritesheetConfig')["player_shoot_right"].width / (2 * this.scene.registry.get('spritesheetConfig')["player_shoot_right"].nbFrames);
         }
 
         // animations du player
-        if (this.isShooting) {
-            if (this.scene.anims.exists(this.playerProperties.animShootName)) {
-                this.anims.play(this.playerProperties.animShootName, true);
-            } else {
-                this.anims.play(this.playerProperties.animShootName_recto, true);
-            }
+        if (this.shootAnimPlaying) {
+            // animation de tir en cours, ne pas interrompre
         } else if (this.isJumping) {
             if (this.scene.anims.exists(this.playerProperties.animJumpName)) {
                 this.anims.play(this.playerProperties.animJumpName, true);
@@ -639,6 +655,16 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     enableWallJump() {
         this.playerProperties.canWallJump = true;
 
+    }
+
+    /**
+     * Applique un facteur de scale au joueur et adapte la hitbox.
+     * @param {number} scaleFactor - Facteur de mise à l'échelle.
+     */
+    applyScale(scaleFactor) {
+        this.setScale(this.scaleX * scaleFactor, this.scaleY * scaleFactor);
+        this.body.setSize(this.frame.width, this.frame.height);
+        this.body.setOffset(0, 0);
     }
 
 	/**

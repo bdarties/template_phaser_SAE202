@@ -64,29 +64,62 @@ export async function chargerConfig(configFile) {
             if (xhr.readyState === XMLHttpRequest.DONE) {
                 if (xhr.status === 200) {
                     var contenu = xhr.responseText;
-                    // Séparer le contenu en lignes
                     var lignes = contenu.trim().split('\n');
-                    // Initialiser un objet pour stocker les paires clé-valeur
-                    var variables = {};
-                    // Pour chaque ligne, séparer la chaîne de caractères pour obtenir le nom de la variable et sa valeur
+
+                    var game = {};
+                    var player = {};
+                    var ennemis = {};
+                    var spritesheetConfig = {};
+
                     for (var i = 0; i < lignes.length; i++) {
-                        var ligne = lignes[i];
-                        var [variable, cle, valeur] = ligne.trim().split(/[.=]/);
-                        if (typeof (variable) != 'undefined' && typeof (cle) != 'undefined' && typeof (valeur) != 'undefined') {
-                            console.log(variable + " et " + cle + " et " + valeur);
-                            // Stocker la paire clé-valeur dans l'objet
-                            valeur = isNaN(parseInt(valeur)) ? valeur.trim() : parseInt(valeur.trim());
-                            // creation de l'entité objet si pas déjà présente
-                            if (typeof (variables[variable.trim()]) == 'undefined') variables[variable.trim()] = {};
-                            variables[variable.trim()][cle] = valeur;
+                        var ligne = lignes[i].trim();
+                        if (ligne === '' || ligne.startsWith('#')) continue; // ignorer lignes vides et commentaires
+
+                        var indexEgal = ligne.indexOf('=');
+                        if (indexEgal === -1) {
+                            console.log("ligne ignorée (pas de =) : " + ligne);
+                            continue;
+                        }
+
+                        var partieGauche = ligne.substring(0, indexEgal).trim();
+                        var valeurBrute = ligne.substring(indexEgal + 1).trim();
+
+                        // conversion de la valeur : nombre, booléen ou chaîne
+                        var valeur;
+                        if (valeurBrute === "true") valeur = true;
+                        else if (valeurBrute === "false") valeur = false;
+                        else if (!isNaN(Number(valeurBrute)) && valeurBrute !== '') valeur = Number(valeurBrute);
+                        else valeur = valeurBrute;
+
+                        var segments = partieGauche.split(':');
+
+                        if (segments[0] === 'game' && segments.length === 2) {
+                            // game:cle=valeur
+                            game[segments[1]] = valeur;
+                        }
+                        else if (segments[0] === 'player' && segments.length === 2) {
+                            // player:cle=valeur
+                            player[segments[1]] = valeur;
+                        }
+                        else if (segments[0] === 'ennemi' && segments.length === 3) {
+                            // ennemi:type:cle=valeur
+                            var type = segments[1];
+                            if (typeof ennemis[type] === 'undefined') ennemis[type] = {};
+                            ennemis[type][segments[2]] = valeur;
+                        }
+                        else if (segments[0] === 'spritesheet' && segments.length === 3) {
+                            // spritesheet:nom:cle=valeur
+                            var nom = segments[1];
+                            if (typeof spritesheetConfig[nom] === 'undefined') spritesheetConfig[nom] = {};
+                            spritesheetConfig[nom][segments[2]] = valeur;
                         }
                         else {
-                            console.log("ligne ignorée " + variable + ", " + cle + " " + valeur);
+                            console.log("ligne ignorée (format inconnu) : " + ligne);
                         }
                     }
-                    // Renvoyer l'objet contenant les paires clé-valeur
-                    console.log(variables);
-                    resolve(variables);
+
+                    console.log("Config chargée :", { game, player, ennemis, spritesheetConfig });
+                    resolve({ game, player, ennemis, spritesheetConfig });
                 } else {
                     reject(new Error("Erreur lors du chargement du fichier : " + xhr.statusText));
                 }
@@ -239,6 +272,23 @@ export function portalSpawning() {
             this.player.y = portal.y;
             this.game.config.portalTarget = null;
             portalFound = true;
+
+            // gestion du scale du player au changement de map
+            if (this.game.config.keep_scale_ratio_between_maps && typeof this.game.config.playerScaleBeforeSwitch !== 'undefined') {
+                // on applique le scale qu'avait le player dans la map source
+                this.player.setScale(this.game.config.playerScaleBeforeSwitch);
+                this.player.body.setSize(this.player.frame.width, this.player.frame.height);
+                this.player.body.setOffset(0, 0);
+            } else if (!this.game.config.keep_scale_ratio_between_maps) {
+                // on applique le scale initial de la map de destination
+                var targetScale = (this.scene.key === 'map_recto')
+                    ? (this.game.config.initial_scale_recto || 1)
+                    : (this.game.config.initial_scale_verso || 1);
+                this.player.setScale(targetScale);
+                this.player.body.setSize(this.player.frame.width, this.player.frame.height);
+                this.player.body.setOffset(0, 0);
+            }
+
             interfaceScene.switchLevel();
             return true;
         }
@@ -476,6 +526,9 @@ export function collectibleCollect(player, item) {
                 break;
             case "long_shot":
                 player.increaseProjectileLength(item.proprietes.item_effect);
+                break;
+            case "scale":
+                player.applyScale(item.proprietes.item_effect);
                 break;
         }
         // Mise en pause la scène actuelle
