@@ -531,8 +531,9 @@ export function collectibleCollect(player, item) {
                 player.applyScale(item.proprietes.item_effect);
                 break;
         }
-        // Mise en pause la scène actuelle
+        // Mise en pause la scène actuelle et de l'interface (chronomètre)
         this.scene.pause();
+        this.scene.get('interfaceJeu').scene.pause();
         // Lancement la scène dialogBox
         this.scene.launch('dialogBox', { proprietes: item.proprietes, sceneToResume: this.scene.key });
     } else {

@@ -1,0 +1,11 @@
+# Assets - fichiers binaires (images, sons, maps)
+src/assets/images/
+src/assets/sounds/
+src/assets/spritesheets/
+src/assets/maps/*.png
+src/assets/maps/*.json
+src/assets/*.png
+src/assets/*.zip
+
+# Fichiers Tiled source
+srcTiled/

@@ -25,6 +25,7 @@ export default class DialogBox extends Phaser.Scene {
     closeDialog() {
         this.scene.stop('dialogBox');
         this.scene.resume(this.sceneToResume);
+        this.scene.resume('interfaceJeu');
 
         // Annule l'effet fadeIn si en cours
         if (this.scene.get(this.sceneToResume).cameras.main._fadeAlpha > 0) {
