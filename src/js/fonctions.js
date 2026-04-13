@@ -3,6 +3,33 @@ import Item from "./Item.js";
 
 
 
+export async function loadFilelistFromDirectory(directory) {
+    return new Promise((resolve, reject) => {
+        fetch(directory)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("Erreur lors du chargement du répertoire : " + response.statusText);
+                }
+                return response.text();
+            })
+            .then(html => {
+                var parser = new DOMParser();
+                var doc = parser.parseFromString(html, "text/html");
+                console.log(doc);
+                var files = Array.from(doc.querySelectorAll("a"))
+                    .map(link => link.getAttribute("href"))
+                    .map(name => name.split('/').pop())
+                    .filter(name => name.endsWith( "png"))
+                  
+                resolve(files);
+            })
+            .catch(error => {
+                reject(error);
+            });
+    });
+}
+
+
 export async function chargerImagesNames(directory) {
     return new Promise((resolve, reject) => {
         fetch(directory)
@@ -272,10 +299,9 @@ export function playerCreation() {
 export function groupsCreation() {
     this.grp_bullet_player = this.physics.add.group({ allowGravity: false });
     this.grp_bullet_enemy = this.physics.add.group({ allowGravity: false });
-    this.grp_portal = this.physics.add.group({ gravityY: 0 });
+    this.grp_portal = this.physics.add.staticGroup({ gravityY: 0 });
     this.grp_enemy = this.physics.add.group();
-    this.grp_items = this.physics.add.group({ allowGravity: false });
-    this.grp_powerUp = this.physics.add.group({ allowGravity: false });
+    this.grp_collectibles = this.physics.add.group({ allowGravity: false });
 
 }
 
@@ -321,62 +347,41 @@ export function killLayerCreation() {
     }
 }
 
-// creation des textures a partir du calque object_layer, si existant
-export function itemCreation() {
+// creation des collectibles (items et powerups) a partir du calque object_layer, si existant
+export function collectiblesCreation() {
     if (this.map.getObjectLayerNames().includes("object_layer")) {
         const tab_objects = this.map.getObjectLayer("object_layer");
-        var list_items = tab_objects.objects.filter(function (object) {
-            return object.name === "item";
+        var list_collectibles = tab_objects.objects.filter(function (object) {
+            return object.name === "item" || object.name === "powerUp";
         });
-         // référence vers la texture par défaut
-        
 
-        list_items.forEach(itemElement => {
+        list_collectibles.forEach(collectibleElement => {
             var texture = "item_to_collect";
-            var item;
+            var collectible;
             var proprietes = {};
-            if (typeof (itemElement.properties) != 'undefined') {
-                itemElement.properties.forEach(property => {
+            
+            if (typeof (collectibleElement.properties) != 'undefined') {
+                collectibleElement.properties.forEach(property => {
                     proprietes[property.name] = property.value;
                 }, this);
+            }
             
-                // ajout du style particulier si existant
-                var style = itemElement.properties.find(property => property.name === "style");
+            // Déterminer la texture
+            if (collectibleElement.name === "powerUp") {
+                texture = "item_" + proprietes.item_type;
+            } else {
+                // Pour les items simples, ajouter le style particulier si existant
+                var style = collectibleElement.properties?.find(property => property.name === "style");
                 if (style) {
                     texture = texture + "_" + style.value;
                 }
             }
-            // création de l'item avec la texture choisie
-            item = new Item(this, itemElement.x, itemElement.y, texture, proprietes);
-            this.grp_items.add(item);
-            item.setDepth(49);
+            
+            // Créer le collectible avec la texture choisie
+            collectible = new Item(this, collectibleElement.x, collectibleElement.y, texture, proprietes);
+            this.grp_collectibles.add(collectible);
+            collectible.setDepth(49);
         }, this);
-    }
-    else {
-        console.log("calque object_layer non trouvé");
-    }
-}
-
-// creation des powerup a partir du calque object_layer, si existant
-export function powerUpCreation() {
-    if (this.map.getObjectLayerNames().includes("object_layer")) {
-        const tab_objects = this.map.getObjectLayer("object_layer");
-        var list_powerUps = tab_objects.objects.filter(function (object) {
-            return object.name === "powerUp";
-        });
-        list_powerUps.forEach(powerUpElement => {
-            var powerUp;
-            var proprietes = {};
-            if (typeof (powerUpElement.properties) != 'undefined') {
-                powerUpElement.properties.forEach(property => {
-                    proprietes[property.name] = property.value;
-                }, this);
-            }
-            powerUp = new Item(this, powerUpElement.x, powerUpElement.y, "item_" + proprietes.item_type, proprietes);
-            this.grp_powerUp.add(powerUp);
-            powerUp.setDepth(49);
-        }, this);
-
     }
     else {
         console.log("calque object_layer non trouvé");
@@ -436,64 +441,65 @@ export function worldsBoundsAndCameraConfiguration() {
     this.cameras.main.startFollow(this.player);
 }
 
-export function powerUpCollect(player, item) {
+export function collectibleCollect(player, item) {
     item.disableBody(true, true);
 
-    switch (item.proprietes.item_type) {
-        case "jump":
-            player.increaseJumpHeight(item.proprietes.item_effect);
-            break;
-        case "double_jump":
-            player.enableDoubleJump();
-            break;
-        case "triple_jump":
-            player.enableTripleJump();
-            break;
-        case "wall_jump":
-            player.enableWallJump();
-            break;
-        case "fly":
-            player.enableFlying();
-            break;
-        case "change":
-            player.setNewLook(item.proprietes);
-            break;
-        case "speed":
-            player.increaseSpeed(item.proprietes.item_effect);
-            break;
+    // Gestion des powerups (items avec item_type)
+    if (typeof item.proprietes.item_type !== 'undefined') {
+        switch (item.proprietes.item_type) {
+            case "jump":
+                player.increaseJumpHeight(item.proprietes.item_effect);
+                break;
+            case "double_jump":
+                player.enableDoubleJump();
+                break;
+            case "triple_jump":
+                player.enableTripleJump();
+                break;
+            case "wall_jump":
+                player.enableWallJump();
+                break;
+            case "fly":
+                player.enableFlying();
+                break;
+            case "change":
+                player.setNewLook(item.proprietes);
+                break;
+            case "speed":
+                player.increaseSpeed(item.proprietes.item_effect);
+                break;
             case "reset" : 
-            player.resetPowerUps();
-            break;
-        case "shoot":
-            player.enableShooting();
-            break;
-        case "long_shot":
-            player.increaseProjectileLength(item.proprietes.item_effect);
-            break;
+                player.resetPowerUps();
+                break;
+            case "shoot":
+                player.enableShooting();
+                break;
+            case "long_shot":
+                player.increaseProjectileLength(item.proprietes.item_effect);
+                break;
+        }
+        // Mise en pause la scène actuelle
+        this.scene.pause();
+        // Lancement la scène dialogBox
+        this.scene.launch('dialogBox', { proprietes: item.proprietes, sceneToResume: this.scene.key });
+    } else {
+        // Gestion des items simples
+        player.collectItem(item);
+        if (item.getType() == "collect") {
+            var interfaceScene = this.scene.get('interfaceJeu');
+            interfaceScene.updateItems();
+        }
+        if (item.getType() == "hearth") {
+            var interfaceScene = this.scene.get('interfaceJeu');
+            interfaceScene.afficherCoeurs();
+        }
 
-    }
-    // Mise en pause la scène actuelle
-    this.scene.pause();
-    // Lancement la scène dialogBox
-    this.scene.launch('dialogBox', { proprietes: item.proprietes, sceneToResume: this.scene.key });
-}
+        if (item.getType() == "key") {
+            player.playerProperties.addToInventory(item.proprietes.id);
+        }
 
-export function itemCollect(player, item) {
-    player.collectItem(item);
-    if (item.getType() == "collect") {
-        var interfaceScene = this.scene.get('interfaceJeu');
-        interfaceScene.updateItems();
+        item.destroy();
     }
-    if (item.getType() == "hearth") {
-        var interfaceScene = this.scene.get('interfaceJeu');
-        interfaceScene.afficherCoeurs();
-    }
-
-    if (item.getType() == "key") {
-        player.playerProperties.addToInventory(item.proprietes.id);
-    }
-
-    item.destroy();
 }
 
 export function collisionAndOverLapCreation() {
@@ -503,15 +509,13 @@ export function collisionAndOverLapCreation() {
     this.physics.add.overlap(this.grp_enemy, this.grp_bullet_player, enemyHitByABullet, null, this);
     this.physics.add.overlap(this.player, this.grp_bullet_enemy, playerHitByABullet, null, this);
     this.physics.add.overlap(this.player, this.grp_enemy, playerHitByAnEnemy, null, this);
-    this.physics.add.overlap(this.player, this.grp_powerUp, powerUpCollect, null, this);
-    this.physics.add.overlap(this.player, this.grp_items, itemCollect, null, this);
+    this.physics.add.overlap(this.player, this.grp_collectibles, collectibleCollect, null, this);
 
     // collision si arme de poing
     if (this.player.closeCombat == true) {
         this.physics.add.overlap(this.player.weapon, this.grp_enemy, enemyHitByWeapon, null, this);
     }
 }
-
 
 export function setDestinationReachedVictoryCondition() {
     if (this.map.getObjectLayerNames().includes("object_layer")) {
@@ -547,4 +551,96 @@ export function gameOver() {
     this.scene.stop("map_verso");
     this.scene.stop("interface_jeu");
     this.scene.start("lose");
+}
+
+// =================================================================================
+// FONCTIONS COMMUNES AUX CARTES (map_recto et map_verso)
+// Ces fonctions utilisent .call(this) pour être exécutées dans le contexte de la scène.
+// =================================================================================
+
+/**
+ * Crée les portails depuis le calque object_layer.
+ * Chaque portail lit ses propriétés (id, target, style, clé requise) et configure
+ * l'overlap avec le joueur pour déclencher this.portalActivation().
+ */
+export function portalsCreation() {    const tab_objects = this.map.getObjectLayer("object_layer");
+    if (!tab_objects) return;
+
+    tab_objects.objects.forEach(point => {
+        if (point.name !== "portal") return;
+
+        const props = {};
+        const pointProperties = Array.isArray(point.properties) ? point.properties : [];
+        pointProperties.forEach(property => { props[property.name] = property.value; });
+
+        const styledTexture = typeof props.style !== 'undefined' ? `portal_${props.style}` : "portal";
+        const texture = this.textures.exists(styledTexture) ? styledTexture : "portal";
+        const portal  = this.physics.add.sprite(point.x, point.y, texture);
+        portal.id     = props.id;
+        portal.target = props.target;
+        portal.locked = typeof props.key !== 'undefined';
+        if (portal.locked) portal.requiredKey = props.key;
+
+        portal.body.allowGravity = false;
+        portal.setVisible(true);
+        portal.setActive(true);
+        portal.setDepth(47);
+        this.grp_portal.add(portal);
+
+        // L'activation est déclenchée par la touche d'action (W par défaut)
+        this.physics.add.overlap(
+            this.player, portal,
+            this.portalActivation,
+            () => Phaser.Input.Keyboard.JustDown(this.actionKey),
+            this
+        );
+    });
+}
+
+/**
+ * Crée les textes et zones de message depuis le calque text_layer (optionnel).
+ * Un texte est rendu visible quand le joueur entre dans la zone associée.
+ */
+export function textZonesCreation() {
+    const layer = this.map.getObjectLayer("text_layer");
+    if (!layer) return;
+
+    const list_texts = layer.objects.filter(o => o.name === "text");
+    const list_zones = layer.objects.filter(o => o.name === "zone");
+
+    // Création des objets texte (initialement invisibles)
+    const tab_texts = [];
+    list_texts.forEach(txtElement => {
+        const texteObject = this.add.text(
+            txtElement.x, txtElement.y,
+            txtElement.text.text,
+            {
+                fontFamily: txtElement.text.fontfamily,
+                fontSize:   txtElement.text.pixelsize,
+                color:      txtElement.text.color ?? "#000000",
+            }
+        );
+        txtElement.properties.forEach(property => {
+            if (property.name === "id") texteObject.id = property.value;
+        });
+        tab_texts[texteObject.id] = texteObject;
+        texteObject.setVisible(false);
+        texteObject.setDepth(200);
+    });
+
+    // Création des zones physiques et association avec les textes
+    list_zones.forEach(zoneElement => {
+        const zoneObject = this.add.zone(zoneElement.x, zoneElement.y)
+            .setOrigin(0, 0)
+            .setSize(zoneElement.width, zoneElement.height);
+        this.physics.world.enable(zoneObject, 0); // 0 = DYNAMIC
+        zoneObject.body.setAllowGravity(false);
+        zoneObject.body.moves = false;
+        zoneElement.properties.forEach(property => {
+            if (property.name === "id_text") {
+                zoneObject.associated_text = tab_texts[property.value];
+            }
+        });
+        this.physics.add.overlap(this.player, zoneObject, printMsg, checkDelay, this);
+    });
 }

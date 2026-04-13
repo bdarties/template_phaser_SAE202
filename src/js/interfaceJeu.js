@@ -17,8 +17,8 @@ export default class interfaceJeu extends Phaser.Scene {
         this.remainingEnemies = this.sys.settings.data.remainingMonsters;
         this.remainingItems = this.sys.settings.data.remainingItems;
         this.destinationReached = false;
-        this.enemis_to_kill = this.sys.settings.data.remainingMonsters;;
-        this.items_to_collect = this.sys.settings.data.remainingItems;;
+        this.enemis_to_kill = this.sys.settings.data.remainingMonsters;
+        this.items_to_collect = this.sys.settings.data.remainingItems;
         this.currentLevel = "recto";
         // récupération des objectifs dans l'interface
         this.objectives = {};
@@ -34,14 +34,10 @@ export default class interfaceJeu extends Phaser.Scene {
             this.max_time = this.game.config.objective_max_time;
         }
         this.playerProperties.remainingTime = this.max_time;
-        /*
-        /*
-          if (this.game.config.objective_kill_them_all == false) victoryConditions++;
-            if (this.game.config.objective_collect_all_items == false) victoryConditions++;
-            if (this.game.config.objective_reach_destination == false) victoryConditions++;
-            if (this.game.config.objective_kill_them_all == true && interfaceScene.remainingMonsters == 0) victoryConditions++;
-            if (this.game.config.objective_collect_all_items == true && interfaceScene.remainingItems == 0) victoryConditions++;
-            if (this.game.config.objective_reach_destination == true && interfaceScene.destinationReached == true) victoryConditions++;
+        /* Exemple de calcul des conditions de victoire (désactivé) :
+            if (!objective_kill_them_all   || kills >= enemis_to_kill)      victoryConditions++;
+            if (!objective_collect_all_items || itemsCollected >= items_to_collect) victoryConditions++;
+            if (!objective_reach_destination || destinationReached)          victoryConditions++;
         */
         // zone des coeurs  
         this.heartText = this.add.text(0, 0, 'Points de vie : ', { fontFamily: 'Arial', fontSize: 24, color: '#ffffff' });

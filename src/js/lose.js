@@ -50,7 +50,7 @@ this.sound.stopByKey('son_game');
     }
 
 
-    udpate() {
+    update() {
 
     }
 

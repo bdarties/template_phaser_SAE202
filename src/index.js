@@ -1,6 +1,5 @@
 // chargement des librairies
 import loading from "./js/loading.js";
-import interfaceJeu from "./js/interfaceJeu.js";
 
 // configuration générale du jeu
 var config = {
@@ -23,10 +22,10 @@ var config = {
       debug: true // permet de voir les hitbox et les vecteurs d'acceleration quand mis à true
     }
   },
-  scene: [loading]
+  scene: [loading],
+  baseURL: window.location.pathname.replace(/\/[^/]*$/, '')
 };
 
 // création et lancement du jeu
 var game = new Phaser.Game(config);
-game.scene.start("loading");
 

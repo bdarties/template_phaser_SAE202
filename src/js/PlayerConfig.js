@@ -32,7 +32,7 @@ export default class Playerconfig {
 
 
 		// écrasement des valeurs par défaut, si définies dans la config
-		var playerConfigNamesTable = ["speed", "jumpHeight", "projectileDuration", "projectileSpeed", "coolDownDuration", "closeCombat", "maxHealth", "lifes", "canShoot"];
+		const playerConfigNamesTable = ["speed", "jumpHeight", "projectileDuration", "projectileSpeed", "coolDownDuration", "closeCombat", "maxHealth", "lifes", "canShoot"];
 		playerConfigNamesTable.forEach(function (paramName, index) {
 			if (typeof (config["player_" + paramName]) != 'undefined') {
 				this[paramName] = config["player_" + paramName];

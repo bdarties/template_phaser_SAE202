@@ -49,7 +49,7 @@ export default class win extends Phaser.Scene {
     }
     }
 
-    udpate() {
+    update() {
 
     }
 

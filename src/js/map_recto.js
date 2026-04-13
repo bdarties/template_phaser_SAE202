@@ -1,48 +1,41 @@
 import * as fct from "./fonctions.js";
 import Player from "./Player.js";
-import Enemy from "./Enemy.js";
-import Item from "./Item.js";
 
 export default class map_recto extends Phaser.Scene {
-  // constructeur de la classe
   spawnPoint = [];
+
   constructor() {
-    super({
-      key: "map_recto"
-    });
+    super({ key: "map_recto" });
   }
 
-  preload() {
-  }
+  preload() {}
 
   create() {
     this.mapReversed = false;
+
+    // Joueur et clavier
     fct.playerCreation.call(this);
     this.player = new Player(this, 100, 150, "player_move_right_SS");
-    //this.player.cursors = this.input.keyboard.createCursorKeys();
-    // this.player.jumpKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
-    // this.player.fireKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.X);
+    this.cursor   = this.input.keyboard.createCursorKeys();
+    this.actionKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SEMICOLON);
 
-    this.cursor = this.input.keyboard.createCursorKeys();
-
-    // creation des groupes contenant les différents élements du niveau
+    // Groupes physiques (balles, portails, ennemis, items…)
     fct.groupsCreation.call(this);
 
-    // Créer la carte en utilisant le fichier Tiled chargé
-    this.map = this.make.tilemap({ key: 'map_recto' });
-    // Ajouter le jeu de tuiles à la carte
-    this.tileset = this.map.addTilesetImage('tileset_image', 'tileset_image');
-   this.tileset_extra = this.map.addTilesetImage('tileset_image_extra', 'tileset_image_extra');
+    // Carte Tiled
+    this.map         = this.make.tilemap({ key: 'map_recto' });
+    this.tileset      = this.map.addTilesetImage('tileset_image',       'tileset_image');
+    this.tileset_extra = this.map.addTilesetImage('tileset_image_extra', 'tileset_image_extra');
 
-    // creation du background + background parallax  
+    // Fond et parallax
     fct.backgroundCreation.call(this, "main_background", this.game.config.fixedBackgroundRecto, "main_background_over_parallax_effect");
-    //creation des calques usuels
+
+    // Calques de la carte
     fct.commonLayersCreation.call(this);
-    // creation du kill_layer et du death_layer
     fct.killLayerCreation.call(this);
     fct.deathLayerCreation.call(this);
 
-    /* ajout et detection eventuelle du calque d'échelles */
+    // Calque d'échelles (optionnel)
     if (this.map.getLayer("ladder_layer") != null) {
       this.ladder_layer = this.map.createLayer('ladder_layer', this.tileset, 0, 0);
       this.ladder_layer.setDepth(45);
@@ -51,222 +44,90 @@ export default class map_recto extends Phaser.Scene {
       this.ladder_layer = null;
     }
 
-    // taille du monde et camera
+    // Taille du monde et caméra
     fct.worldsBoundsAndCameraConfiguration.call(this);
 
-    // clavier : commande pour changer de portail
-    this.actionKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W);
-
-    // ** chargement des destinations ( a passer en fonction) **/
-    // chargement des objets du calque object_layer
+    // Point de départ et destinations (depuis l'object_layer)
     const tab_objects = this.map.getObjectLayer("object_layer");
     this.destinations = [];
-    /// lecture des coordonnées destination 
     tab_objects.objects.forEach(point => {
-      if (point.name == "destination") {
-        point.properties.forEach(property => {
-
-          if (property.name == "id") {
-            this.destinations[parseInt(property.value)] = {};
-            this.destinations[parseInt(property.value)].x = point.x;
-            this.destinations[parseInt(property.value)].y = point.y;
-            console.log(this.destinations);
-            console.log(point.x);
-
-          }
-        }, this);
-      }
-    }, this);
-
-    // Creation des Ennemis  :
-    // note : le modele de mobilité est chargé dans la classe ennemi
-    fct.enemiesCreation.call(this);
-
-    // Creation des powerUp a collecter :
-    fct.powerUpCreation.call(this);
-
-    // Creation des item a collecter :
-    fct.itemCreation.call(this);
-
-    /////
-    // Creation des portails  :
-    // le modele de mobilité est chargé dans la classe ennemi
-    ///
-    tab_objects.objects.forEach(point => {
-      if (point.name == "start") {
-        this.player.x = point.x;
-        this.player.y = point.y;
+      if (point.name === "start") {
+        this.player.x    = point.x;
+        this.player.y    = point.y;
         this.spawnPoint.x = point.x;
         this.spawnPoint.y = point.y;
-
       }
-      if (point.name == "portal") {
-        var portal_properties = {};
+      if (point.name === "destination") {
         point.properties.forEach(property => {
-          portal_properties[property.name] = property.value;
-          
-        }, this);
-
-        var portal_texture;
-        if (typeof (portal_properties.style) != 'undefined') {
-          portal_texture = "portal_" + portal_properties.style;
-        }
-        else portal_texture = "portal";
-        var portal = this.physics.add.sprite(point.x, point.y, portal_texture);
-        portal.id = portal_properties.id;
-        portal.target = portal_properties.target;
-
-        // ajout de la cle si necessaire
-        if (typeof (portal_properties.key) != 'undefined') {
-        portal.locked = true;
-        portal.requiredKey = portal_properties.key;        
-        }
-        else portal.locked = false;
-
-        this.grp_portal.add(portal);
-        portal.body.allowGravity = false;
-
-        console.log("[r] portail créé: id " + portal.id + " target : " + portal.target + "avec clef? " + portal.locked);
-        portal.setDepth(47);
-        // activation du portail
-        this.physics.add.overlap(this.player, portal, this.portalActivation, function () {
-          return (Phaser.Input.Keyboard.JustDown(this.actionKey));
-        }, this);
+          if (property.name === "id") {
+            const id = parseInt(property.value);
+            this.destinations[id] = { x: point.x, y: point.y };
+          }
+        });
       }
     });
 
+    // Ennemis et collectibles (items et powerups)
+    fct.enemiesCreation.call(this);
+    fct.collectiblesCreation.call(this);
+
+    // Portails (créés depuis object_layer, activation via touche W)
+    fct.portalsCreation.call(this);
+
+    // Collisions et overlaps physiques
     fct.collisionAndOverLapCreation.call(this);
+    fct.setDestinationReachedVictoryCondition.call(this);
 
-    fct.setDestinationReachedVictoryCondition.call(this)
+    // Textes et zones de message (calque text_layer, optionnel)
+    fct.textZonesCreation.call(this);
 
-    // création des textes et zones de texte
-    const list_texts_and_zones = this.map.getObjectLayer("text_layer");
-    if (list_texts_and_zones != null) {
-      // on récupère le text_layer, on extrait les 2 éléments, zones et text
-      var list_texts = list_texts_and_zones.objects.filter(function (object) {
-        return object.name === "text";
-      });
-      var list_zones = list_texts_and_zones.objects.filter(function (object) {
-        return object.name === "zone";
-      });
-
-      var tab_texts = [];
-      list_texts.forEach(txtElement => {
-        console.log(txtElement);
-        var texteObject = this.add.text(txtElement.x, txtElement.y, txtElement.text.text, {
-          fontFamily: txtElement.text.fontfamily,
-          fontSize: txtElement.text.pixelsize,
-          color: (typeof(txtElement.text.color) != 'undefined'? txtElement.text.color : "#000000")
-        });
-        txtElement.properties.forEach(property => {
-          if (property.name == "id") {
-            texteObject.id = property.value;
-          }
-        }, this);
-        tab_texts[texteObject.id] = texteObject;
-        texteObject.setVisible(false);
-        texteObject.setDepth(200);
-      }, this
-      );
-
-
-      list_zones.forEach(zoneElement => {
-        var zoneObject = this.add.zone(zoneElement.x, zoneElement.y).setOrigin(0, 0).setSize(zoneElement.width, zoneElement.height);
-        this.physics.world.enable(zoneObject, 0); // (0) DYNAMIC (1) STATIC
-        zoneObject.body.setAllowGravity(false);
-        zoneObject.body.moves = false;
-        zoneElement.properties.forEach(property => {
-          if (property.name == "id_text") {
-            zoneObject.associated_text = tab_texts[property.value];
-          }
-        }, this);
-        this.physics.add.overlap(this.player, zoneObject, fct.printMsg, fct.checkDelay, this);
-
-      }, this
-      );
-
-    }
+    // Musique
     this.game.config.sceneTarget = "recto";
-    // lecture du son
-      if (this.sound.get("son_intro")) {
-      this.sound.stopByKey("son_intro");
+    if (this.sound.get("son_intro")) this.sound.stopByKey("son_intro");
+    if (this.sound.get('son_game')) {
+      this.sound.play('son_game', { loop: true });
     }
-     if (!this.sound.get('son_game')) {
-            console.warn("Le son 'son_game' n'est pas chargé dans la scène.");
-        } else {
-          this.sound.play('son_game', { loop: true });
-        }
-
   }
 
   update() {
-    //this.fond.tilePositionY +=0;
-    // this.fond.tilePositionX += 1;
     if (fct.win.call(this)) {
-      var interfaceScene = this.scene.get('interfaceJeu');
-
-      interfaceScene.launchWinScene();
-
+      this.scene.get('interfaceJeu').launchWinScene();
     }
-    if (this.game.config.sceneTarget != "recto") return;
+    if (this.game.config.sceneTarget !== "recto") return;
     if (this.game.config.portalTarget != null) {
       fct.portalSpawning.call(this);
     }
-
-    // rajouter la nage
     this.player.update(this.ladder_layer);
-    this.grp_enemy.children.iterate(function iterateur(un_ennemi) {
-      un_ennemi.update(this.platform_layer);
-    }, this);
-
-    if (Phaser.Input.Keyboard.JustDown(this.actionKey) == true) {
-    }
+    this.grp_enemy.children.iterate(ennemi => ennemi.update(this.platform_layer), this);
   }
 
+  // Gestion de la collision joueur/plateforme en présence d'une échelle
   checkLadderSpecifics(player, platform) {
-    // le player veut monter 
-    if (player.verticalDirection == "up" && player.onLadder) {
-      if (player.isMoving == true) return true;
-      return false;
+    if (player.verticalDirection === "up" && player.onLadder) {
+      return player.isMoving;
     }
-
     if (this.ladder_layer != null && this.cursor.down.isDown) {
-      if (player.isMoving == true) return true;
-
-      const TileDown = this.ladder_layer.getTileAtWorldXY(player.x, player.getBottomCenter().y + 1);
-      if (TileDown != null) {
-        return false;
-      }
-      else {
-
-      }
-
+      if (player.isMoving) return true;
+      const tileDown = this.ladder_layer.getTileAtWorldXY(player.x, player.getBottomCenter().y + 1);
+      return tileDown == null;
     }
     return true;
   }
 
+  // Activation d'un portail : vérifie la clé requise puis bascule vers map_verso
   portalActivation(player, portal) {
-      if (portal.locked == true) {
-      if (player.playerProperties.isInInventory((portal.requiredKey))) {
-        // on a la clef
+    if (portal.locked) {
+      if (player.playerProperties.isInInventory(portal.requiredKey)) {
         portal.locked = false;
-      } 
-      else {       
-      alert ("portail verrouillé, il vous faut la clef num" + portal.requiredKey);
+      } else {
+        alert(`Portail verrouillé — il vous faut la clef n°${portal.requiredKey}`);
         return;
       }
     }
-
-    this.target = portal.target;
-    console.log('activation de potail sur Recto, je vais vers verso');
-    console.log("direction le portail num" + portal.target);
     this.game.config.portalTarget = portal.target;
-    this.game.config.sceneTarget = "verso";
-    console.log(this.game.config.portalTarget);
-
+    this.game.config.sceneTarget  = "verso";
     this.scene.switch("map_verso");
   }
-
-
 }
+
 
