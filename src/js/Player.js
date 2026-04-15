@@ -658,11 +658,21 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     }
 
     /**
-     * Applique un facteur de scale au joueur et adapte la hitbox.
-     * @param {number} scaleFactor - Facteur de mise à l'échelle.
+     * Fixe le scale absolu du joueur et adapte la hitbox.
+     * @param {number} scaleValue - Valeur absolue de scale.
      */
-    applyScale(scaleFactor) {
-        this.setScale(this.scaleX * scaleFactor, this.scaleY * scaleFactor);
+    setAbsoluteScale(scaleValue) {
+        this.setScale(scaleValue);
+        this.body.setSize(this.frame.width, this.frame.height);
+        this.body.setOffset(0, 0);
+    }
+
+    /**
+     * Multiplie le scale actuel du joueur par un facteur et adapte la hitbox.
+     * @param {number} factor - Facteur multiplicatif.
+     */
+    applyScaleFactor(factor) {
+        this.setScale(this.scaleX * factor, this.scaleY * factor);
         this.body.setSize(this.frame.width, this.frame.height);
         this.body.setOffset(0, 0);
     }

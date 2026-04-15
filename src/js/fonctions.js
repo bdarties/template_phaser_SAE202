@@ -275,19 +275,12 @@ export function portalSpawning() {
 
             // gestion du scale du player au changement de map
             if (this.game.config.keep_scale_ratio_between_maps && typeof this.game.config.playerScaleBeforeSwitch !== 'undefined') {
-                // on applique le scale qu'avait le player dans la map source
+                // scale global : on applique le scale qu'avait le player dans la map source
                 this.player.setScale(this.game.config.playerScaleBeforeSwitch);
                 this.player.body.setSize(this.player.frame.width, this.player.frame.height);
                 this.player.body.setOffset(0, 0);
-            } else if (!this.game.config.keep_scale_ratio_between_maps) {
-                // on applique le scale initial de la map de destination
-                var targetScale = (this.scene.key === 'map_recto')
-                    ? (this.game.config.initial_scale_recto || 1)
-                    : (this.game.config.initial_scale_verso || 1);
-                this.player.setScale(targetScale);
-                this.player.body.setSize(this.player.frame.width, this.player.frame.height);
-                this.player.body.setOffset(0, 0);
             }
+            // sinon : scale propre au niveau, le player garde son scale actuel (persisté par scene.switch)
 
             interfaceScene.switchLevel();
             return true;
@@ -528,7 +521,10 @@ export function collectibleCollect(player, item) {
                 player.increaseProjectileLength(item.proprietes.item_effect);
                 break;
             case "scale":
-                player.applyScale(item.proprietes.item_effect);
+                player.setAbsoluteScale(item.proprietes.item_effect);
+                break;
+            case "scaleFactor":
+                player.applyScaleFactor(item.proprietes.item_effect);
                 break;
         }
         // Mise en pause la scène actuelle et de l'interface (chronomètre)
