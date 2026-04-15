@@ -8,23 +8,24 @@ export default class Item extends Phaser.Physics.Arcade.Sprite {
       // Ajoute l'item à la scène
       scene.add.existing(this);
 
-      // Déterminer la clé de base pour la texture/animation
-      var itemKey = textureKey;
-      if (typeof (this.proprietes.type) != 'undefined') {
-         if (this.proprietes.style != 'undefined') {
-            itemKey = "item_" + this.proprietes.style;
-         } else {
-            itemKey = "item_" + this.proprietes.type;
-         }
-      }
+      // Déterminer la clé de type (ex: "shoot", "scale", "collect"...)
+      var itemType = this.proprietes.type|| this.proprietes.item_type || "collect";
 
-      // Si une animation spritesheet existe, on la joue en boucle
-      var animKey = "anim_" + itemKey;
+      // 1) Si une animation anim_item_(type) existe, on la joue en boucle
+      var animKey = "anim_item_" + itemType;
       if (scene.anims.exists(animKey)) {
          this.play({ key: animKey, repeat: -1 });
-      } else {
-         this.setTexture(itemKey);
-         console.log(animKey+ "non trouvé");
+      }
+      // 2) Sinon, si l'item a un attribut "texture" (ou "style"), on applique item_(valeur)
+      else if (typeof this.proprietes.texture !== 'undefined') {
+         this.setTexture("item_" + this.proprietes.texture);
+      }
+      else if (typeof this.proprietes.style !== 'undefined') {
+         this.setTexture("item_" + this.proprietes.style);
+      }
+      // 3) Sinon, texture par défaut : item_(type)
+      else {
+         this.setTexture("item_" + itemType);
       }
 
       // Physique de l'item 
