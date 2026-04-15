@@ -52,3 +52,5 @@ spritesheet:projectile_player:nbFrames=4
 spritesheet:projectile_player:frameDuration=100
 spritesheet:player2_move_right:nbFrames=4
 spritesheet:player2_move_right:frameDuration=100
+spritesheet:item_change:nbFrames=4
+spritesheet:item_change:frameDuration=100

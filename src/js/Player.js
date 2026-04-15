@@ -333,6 +333,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         if (typeof (proprietes.move) != 'undefined') this.playerProperties.animMoveName = proprietes.move;
         if (typeof (proprietes.jump) != 'undefined') this.playerProperties.animJumpName = proprietes.jump;
         if (typeof (proprietes.stand) != 'undefined') this.playerProperties.animStandtName = proprietes.stand;
+        console.log("new look : " + this.playerProperties.animShootName );
     }
 
     // === Gestion des kills ===
